@@ -1,0 +1,10 @@
+name = Product Option
+description = This module enables the define user input fields (aka options) in the add to card form. 
+package = Commerce
+core = 7.x
+version = 7.x-1.0
+dependencies[] = commerce
+
+
+files[] = commerce_option.module
+files[] = CommerceOptionEntityController.inc

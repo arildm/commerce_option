@@ -1,0 +1,10 @@
+name = Product Option Set Reference
+description = This module enables to reference an option form to the an entity.
+package = Commerce
+core = 7.x
+version = 7.x-1.0
+dependencies[] = commerce_option
+
+
+files[] = commerce_option_set_reference.module
+

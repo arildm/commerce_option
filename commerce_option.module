@@ -1,0 +1,563 @@
+<?php
+
+function commerce_option_entity_info() {
+  $return['commerce_option'] = array(
+    'label' => t('Commerce Option'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'commerce_option',
+    'fieldable' => TRUE,
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'option_id',
+      'bundle' => 'set_id',
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'access callback' => 'commerce_option_set_access',
+       'module' => 'commerce_option',
+    'bundle keys' => array(
+      'bundle' => 'set_id',
+    ),
+    'bundles' => array(),
+  );
+
+
+  foreach (commerce_option_sets() as $set_id => $option_set) {
+    $return['commerce_option']['bundles'][$set_id] = array(
+      'label' => $option_set['name'],
+      'admin' => array(
+        'path' => 'admin/commerce/config/option-sets/' . strtr($set_id, '_', '-'),
+        'access arguments' => array('administer option sets'),
+      ),
+    );
+  }
+
+  $return['commerce_option_set'] = array(
+    'label' => t('Commerce Option Set'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'commerce_option_set',
+    'fieldable' => FALSE,
+    'exportable' => FALSE,
+    'entity keys' => array(
+      'id' => 'set_id',
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'access callback' => 'commerce_option_set_access',
+       'module' => 'commerce_option',
+    'bundles' => array(),
+  );
+
+
+
+  return $return;
+}
+
+
+/**
+ * Returns an initialized product object.
+ *
+ * @param $set_id
+ *   The machine-readable set id of the option.
+ *
+ * @return
+ *   A product object with all default fields initialized.
+ */
+function commerce_option_new($set_id = '') {
+  return entity_get_controller('commerce_product')->create($set_id);
+}
+
+/**
+ * Creation callback for the Entity module.
+ */
+function _commerce_option_create($values = array()) {
+  // Create a new product of the specified type.
+  $option = commerce_product_new($values['set_id']);
+  unset($values['set_id']);
+
+  $wrapper = entity_metadata_wrapper('commerce_option', $option);
+
+  foreach ($values as $name => $value) {
+    $wrapper->$name->set($value);
+  }
+
+  return $wrapper->value();
+}
+
+
+function commerce_option_set_access($op, $type = NULL, $account = NULL) {
+  return user_access('administer option sets', $account);
+}
+
+function commerce_option_menu() {
+  $items = array();
+  
+  
+  $items['admin/commerce/config/option-sets'] = array(
+    'title' => 'Option Sets',
+    'description' => 'Manage the product option sets.',
+    'page callback' => 'commerce_option_sets_overview',
+    'access arguments' => array('administer option sets'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+  );
+  
+  $items['admin/commerce/config/option-sets/list'] = array(
+    'title' => 'Option Sets',
+    'description' => 'Manage the product option sets.',
+    'page callback' => 'commerce_option_sets_overview',
+    'access arguments' => array('administer option sets'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  
+  $items['admin/commerce/config/option-sets/test'] = array(
+    'title' => 'Test',
+    'description' => 'Manage the product option sets.',
+    'page callback' => 'commerce_option_test',
+    'access arguments' => array('administer option sets'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+
+  $items['admin/commerce/config/option-sets/add'] = array(
+    'title' => 'Add set',
+    'page callback' => 'commerce_option_set_form_wrapper',
+    'page arguments' => array(commerce_option_set_new()),
+    'access arguments' => array('administer option sets'),
+    'type' => MENU_LOCAL_ACTION,
+    //'file' => 'includes/commerce_product_ui.types.inc',
+  );
+  
+  foreach (commerce_option_sets() as $set_id => $option_set) {
+    // Convert underscores to hyphens for the menu item argument.
+    $set_id_arg = strtr($set_id, '_', '-');
+
+    $items['admin/commerce/config/option-sets/' . $set_id_arg] = array(
+      'title' => $option_set['name'],
+      'page callback' => 'commerce_option_set_form_wrapper',
+      'page arguments' => array($set_id),
+      'access arguments' => array('administer option sets'),
+    );
+
+    if ($option_set['module'] == 'commerce_option') {
+      $items['admin/commerce/config/option-sets/' . $set_id_arg . '/edit'] = array(
+        'title' => 'Edit',
+        'access arguments' => array('administer option sets'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+      );
+      
+      $items['admin/commerce/config/option-sets/' . $set_id_arg . '/delete'] = array(
+        'title' => 'Delete',
+        'page callback' => 'commerce_option_set_delete_form_wrapper',
+        'page arguments' => array($set_id),
+        'access arguments' => array('administer option sets'),
+        'type' => MENU_LOCAL_TASK,
+        'context' => MENU_CONTEXT_INLINE,
+        'weight' => 10,
+      );
+    }
+  }
+  
+  
+  return $items;
+}
+
+
+function commerce_option_test() {
+  //$entity = _commerce_option_create(array('set_id' => 'test_set'));
+  $entity = entity_create('commerce_option', array('set_id' => 'test_set'));
+  
+  return drupal_get_form('commerce_option_form', $entity);
+}
+/**
+ * Load multiple test entities based on certain conditions.
+ *
+ * @param $pids
+ *   An array of entity IDs.
+ * @param $conditions
+ *   An array of conditions to match against the {entity} table.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   An array of test entity objects, indexed by pid.
+ */
+function commerce_option_load_multiple($pids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('commerce_option', $pids, $conditions, $reset);
+}
+
+function commerce_option_form($form, &$form_state, $option) {
+  // Add the field related form elements.
+  $form_state['commerce_option'] = $option;
+  field_attach_form('commerce_option', $option, $form, $form_state);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#default_value' => 'Abschicken',
+  );
+  
+  $form['#submit'][] = 'commerce_option_form_submit';
+  
+  return $form;
+}
+
+function commerce_option_form_submit($form, &$form_state) {
+  $option = &$form_state['commerce_option'];
+
+  // Save default parameters back into the $product object.
+  //$option->sku = $form_state['values']['sku'];
+
+  // Notify field widgets.
+  field_attach_submit('commerce_option', $option, $form, $form_state);
+
+  // Save the product.
+  commerce_option_save($option);
+}
+
+
+function commerce_option_save($option) {
+  return entity_get_controller('commerce_option')->save($option);
+}
+
+function commerce_option_permission() {
+  $permissions = array(
+    'administer option sets' => array(
+      'title' => t('Administer Option Sets'),
+      'description' => t('Allows users to manage option sets.'),
+    ),
+  );
+  return $permissions;
+}
+
+function commerce_option_theme() {
+  return array(
+    'option_set_admin_overview' => array(
+      'variables' => array('set' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Builds an overview of a option set for display to an administrator.
+ *
+ * @param $variables
+ *   An array of variables used to generate the display; by default includes the
+ *     set key with a value of the option set array.
+ *
+ * @ingroup themeable
+ */
+function theme_option_set_admin_overview($variables) {
+  $option_set = $variables['option_set'];
+
+  $output = check_plain($option_set['name']);
+  $output .= ' <small> (Machine name: ' . check_plain($option_set['set_id']) . ')</small>';
+  $output .= '<div class="description">' . filter_xss_admin($option_set['description']) . '</div>';
+
+  return $output;
+}
+
+
+function commerce_option_sets_overview() {
+  drupal_add_css(drupal_get_path('module', 'commerce_option') . '/theme/commerce_option_sets');
+
+  $header = array(
+    t('Name'),
+    t('Operations'),
+  );
+
+  $rows = array();
+
+  // Loop through all defined option sets.
+  foreach (commerce_option_sets() as $set_id => $option_set) {
+    
+    // Build the operation links for the current option set.
+    $links = menu_contextual_links('commerce-option', 'admin/commerce/config/option-sets', array(strtr($set_id, array('_' => '-'))));
+
+    // Add the option set's row to the table's rows array.
+    $rows[] = array(
+      theme('option_set_admin_overview', array('option_set' => $option_set)),
+      theme('links', array('links' => $links, 'attributes' => array('class' => 'links inline operations'))),
+    );
+  }
+
+  // If no option set are defined...
+  if (empty($rows)) {
+    // Add a standard empty row with a link to add a new option set.
+    $rows[] = array(
+      array(
+        'data' => t('There are no option sets yet. <a href="@link">Add option set</a>.', array('@link' => url('admin/commerce/config/option-sets/add'))),
+        'colspan' => 2,
+      )
+    );
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+
+function commerce_option_sets() {
+  // First check the static cache for a option sets array.
+  $option_sets = &drupal_static(__FUNCTION__);
+
+  // If it did not exist, fetch the sets now.
+  if (!isset($option_sets)) {
+    $option_sets = array();
+
+    // Find option sets defined by hook_commerce_option_set_info().
+    foreach (module_implements('commerce_option_set_info') as $module) {
+      foreach (module_invoke($module, 'commerce_option_set_info') as $set_id => $option_set) {
+        // Set the module each option set is defined by.
+        $option_set['module'] = $module;
+        $option_sets[$set_id] = $option_set;
+      }
+    }
+
+    // Last allow the info to be altered by other modules.
+    drupal_alter('commerce_option_set_info', $option_sets);
+  }
+
+  return $option_sets;
+
+}
+
+/**
+ * Implements hook_commerce_option_set_info()
+ */
+function commerce_option_commerce_option_set_info() {
+  return db_query('SELECT * FROM {commerce_option_set}')->fetchAllAssoc('set_id', PDO::FETCH_ASSOC);
+}
+
+
+/**
+ * Creates a new option set array. 
+ */
+function commerce_option_set_new() {
+  return array(
+    'set_id' => '',
+    'name' => '',
+    'description' => '',
+  );
+}
+
+/**
+ * Saves a option set.
+ *
+ * This function will either insert a new option set if $option_set['is_new']
+ * is set or attempt to update an existing option set if it is not. It does
+ * not currently support changing the machine-readable name of the option set,
+ * nor is this possible through the form supplied by the Option module.
+ *
+ * @param $option_set
+ *   The option set array containing the basic properties as initialized in
+ *     commerce_option_set_new().
+ *
+ * @return
+ *   The return value of the call to drupal_write_record() to save the option
+ *     set, either FALSE on failure or SAVED_NEW or SAVED_UPDATED indicating
+ *     the type of query performed to save the option set.
+ */
+function commerce_option_set_save($option_set) {
+  $op = drupal_write_record('commerce_option_set', $option_set, empty($option_set['is_new']) ? 'set_id' : array());
+
+  // If this is a new option set and the insert did not fail...
+  if (!empty($option_set['is_new']) && $op !== FALSE) {
+    // Notify the field API that a new bundle has been created.
+    field_attach_create_bundle('commerce_option', $option_set['set_id']);
+
+    // Notify other modules that a new option set has been created.
+    module_invoke_all('commerce_option_set_insert', $option_set);
+  }
+  elseif ($op !== FALSE) {
+    // Notify other modules that an existing option set has been updated.
+    module_invoke_all('commerce_option_set_update', $option_set);
+  }
+
+  commerce_option_set_reset();
+  menu_rebuild();
+
+  return $op;
+}
+
+
+function commerce_option_set_delete($set_id) {
+  $option_set = commerce_option_set_load($set_id);
+
+  db_delete('commerce_option_set')
+    ->condition('set_id', $set_id)
+    ->execute();
+
+  // Rebuild the menu to get rid of this option set's edit menu item.
+  commerce_option_set_reset();
+  menu_rebuild();
+
+  // Notify the field API that this bundle has been destroyed.
+  field_attach_delete_bundle('commerce_option', $set_id);
+
+  // Notify other modules that this option set has been deleted.
+  module_invoke_all('commerce_option_set_delete', $option_set);
+
+}
+
+
+/**
+ * Resets the cached list of option sets.
+ */
+function commerce_option_set_reset() {
+  $option_sets = &drupal_static('commerce_option_sets');
+  $option_sets = NULL;
+}
+
+
+
+/**
+ * Loads a option set
+ *
+ * @param $set_id
+ *   The machine-readable name of the option set; accepts normal machine names
+ *     and URL prepared machine names with underscores replaced by hyphens.
+ */
+function commerce_option_set_load($set_id) {
+  $set_id = strtr($set_id, array('-' => '_'));
+  $option_sets = commerce_option_sets();
+  return !empty($option_sets[$set_id]) ? $option_sets[$set_id] : FALSE;
+}
+
+/**
+ * Checks to see if a given option set exists
+ *
+ * @param $set_id
+ *   The machine-readable name of the set.
+ *
+ * @return
+ *   TRUE or FALSE indicating whether or not the option set exists.
+ */
+function commerce_option_set_exists($set_id) {
+  // Look for a match of the set.
+  if ($match_id = db_query('SELECT set_id FROM {commerce_option_set} WHERE set_id = :set', array(':set' => $set_id))->fetchField()) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+/**
+ * Form callback wrapper: create or edit a option set.
+ *
+ * @param $set_id
+ *   The machine-name of the option set being created or edited by this form
+ *     or a full option set array.
+ *
+ * @see commerce_option_set_form()
+ */
+function commerce_option_set_form_wrapper($set_id) {
+  if (is_array($set_id)) {
+    $option_set = $set_id;
+  }
+  else {
+    $option_set = commerce_option_set_load($set_id);
+  }
+
+  // Add the breadcrumb for the form's location.
+  commerce_option_breadcrumb(TRUE);
+
+  // Return a message if the option set is not governed by the commerce option module.
+  if (!empty($option_set['set_id']) && $option_set['module'] != 'commerce_option') {
+    return t('This option set cannot be edited, because it is not defined by the Option module.');
+  }
+
+  // Include the forms file from the Product module.
+  module_load_include('inc', 'commerce_option', 'includes/commerce_option_set.forms');
+
+  return drupal_get_form('commerce_option_set_form', $option_set);
+}
+
+
+/**
+ * Sets the breadcrumb for administrative option pages.
+ *
+ * @param $option_sets
+ *   TRUE or FALSE indicating whether or not the breadcrumb should include the
+ *     option sets administrative page.
+ */
+function commerce_option_breadcrumb($option_sets = FALSE) {
+  $breadcrumb = array(
+    l(t('Home'), '<front>'),
+    l(t('Administration'), 'admin'),
+    l(t('Store'), 'admin/commerce'),
+    l(t('Configuration'), 'admin/commerce/config'),
+  );
+
+  if ($option_sets) {
+    $breadcrumb[] = l(t('Option Sets'), 'admin/commerce/config/option-sets');
+  }
+
+  drupal_set_breadcrumb($breadcrumb);
+}
+
+
+
+/**
+ * Form callback wrapper: confirmation form for deleting a option set.
+ *
+ * @param $set_id
+ *   The machine-name of the option set being created or edited by this form
+ *     or a full option set array.
+ *
+ * @see commerce_option_set_delete_form()
+ */
+function commerce_option_set_delete_form_wrapper($set_id) {
+  if (is_array($set_id)) {
+    $option_set = $set_id;
+  }
+  else {
+    $option_set = commerce_option_set_load($set_id);
+  }
+
+  // Add the breadcrumb for the form's location.
+  commerce_option_breadcrumb(TRUE);
+
+  // Return a message if the option set is not governed by Product UI.
+  if ($option_set['module'] != 'commerce_option') {
+    return t('This option set cannot be deleted, because it is not defined by the Option module.');
+  }
+
+  // Don't allow deletion of option set that have options defined.
+  if (($count = db_query("SELECT option_id FROM {commerce_option} WHERE set = :set", array(':set' => $option_set['set_id']))->rowCount()) > 0) {
+    drupal_set_title(t('Cannot delete the %name option set', array('%name' => $option_set['name'])), PASS_THROUGH);
+    return format_plural($count,
+      'There is 1 option of this option set. It cannot be deleted.',
+      'There are @count options of this option set. It cannot be deleted.'
+    );
+  }
+  
+  module_load_include('inc', 'commerce_option', 'includes/commerce_option_set.forms');
+
+  return drupal_get_form('commerce_option_set_delete_form', $option_set);
+}
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
