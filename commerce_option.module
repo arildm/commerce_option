@@ -48,7 +48,7 @@ function commerce_option_entity_info() {
     'entity keys' => array(
       'id' => 'set_id',
       'label' => 'name',
-      'name' => 'name',
+      'name' => 'set_id',
     ),
     'bundle of' => 'commerce_option',
     'access callback' => 'commerce_option_set_access',
