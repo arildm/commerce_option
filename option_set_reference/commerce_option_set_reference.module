@@ -34,6 +34,20 @@ function commerce_option_set_reference_field_formatter_info() {
   );
 }
 
+function commerce_option_set_reference_enable() {
+  $weight = db_select('system', 's')
+    ->fields('s', array('weight'))
+    ->condition('name', 'commerce_product_bundle', '=')
+    ->execute()
+    ->fetchField();
+  if (isset($weight)) {
+    db_update('system')
+      ->fields(array('weight' => $weight +1))
+      ->condition('name', 'commerce_option_set_reference', '=')
+      ->execute();
+  }
+}
+
 
 function commerce_option_set_reference_field_is_empty($item, $field) {
   // set_id = 0 is empty too, which is exactly what we want.
@@ -111,6 +125,8 @@ function commerce_option_set_reference_field_widget_form(&$form, &$form_state, $
   if($instance['widget']['type'] == 'commerce_option_set_reference_select_list') {
     $option_sets = commerce_option_get_sets();
     
+    $options = array('' => t('none')); 
+    
     foreach($option_sets as $set) {
       $options[$set->set_id] = $set->name;
     }
@@ -132,7 +148,7 @@ function commerce_option_set_reference_field_widget_form(&$form, &$form_state, $
  *
  * Here we modify the add to cart form. 
  */
-function commerce_option_form_alter(&$form, &$form_state, $form_id) {
+function commerce_option_set_reference_form_alter(&$form, &$form_state, $form_id) {
   if (strstr($form_id, 'commerce_cart_add_to_cart_form')) {
     
     if (isset($form_state['default_product'])) {
@@ -166,25 +182,22 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
       }
     }
     
-    // print_r($form);
     if (isset($form_state['bundle'])) {
-      die();
-      
+
       foreach ($form_state['bundle'] as $id => &$bundle_set) {
         $sub_product = $form_state['bundle'][$id]['default_product'];
-        
-        echo 'asdf';
-        die();
-        
+        $sub_product_wrapper = entity_metadata_wrapper('commerce_product', $sub_product);    
+                
         // Iterates of the fields of this product. We search for 
         // option set reference fields. 
         foreach ($sub_product as $field_name => $field) {
           $field_info = field_info_field($field_name);
           $type = $field_info['type'];
-      
+    
+          
           if ($type == 'commerce_option_set_reference') {
-            $lang_code = field_language('commerce_product', $current_product, $field_name);
-        
+            $lang_code = field_language('commerce_product', $sub_product, $field_name);
+                    
             foreach($field[$lang_code] as $delta => $set_id) {
               $option = entity_create('commerce_option', $set_id);
           
@@ -223,24 +236,63 @@ function commerce_option_add_to_cart_submit($form, $form_state){
     $field_info = field_info_field($field_name);
     $type = $field_info['type'];
     
-    if($type == 'commerce_option_set_reference')
-    {
-      $lang_code = field_language('commerce_product', $current_product, $field_name);
-      
-      foreach($field[$lang_code] as $id => $set_id) {
-        
-        $option = $form_state['commerce_option'][$field_name][$id];
-        
-        // Notify field widgets.
-        field_attach_submit('commerce_option', $option, $form, $form_state);
-        
-        $option->line_item_id = $form_state['line_item']->line_item_id;
-        
-        // Save the product.
-        commerce_option_save($option);
+    if (isset($form_state['bundle'])) {
 
-      }
+      foreach ($form_state['bundle'] as $id => &$bundle_set) {
+        $sub_product = $form_state['bundle'][$id]['default_product'];
+        $sub_product_wrapper = entity_metadata_wrapper('commerce_product', $sub_product);    
+                
+        // Iterates of the fields of this product. We search for 
+        // option set reference fields. 
+        foreach ($sub_product as $field_name => $field) {
+          $field_info = field_info_field($field_name);
+          $type = $field_info['type'];    
+          
+          if ($type == 'commerce_option_set_reference') {
+            $lang_code = field_language('commerce_product', $sub_product, $field_name);
+                    
+            foreach($field[$lang_code] as $delta => $set_id) {
+              $option = $form_state[$id]['commerce_option'][$field_name][$delta];
+        
+              // Notify field widgets.
+              field_attach_submit('commerce_option', $option, $form, $form_state);
+              
+              //$option->line_item_id = $form_state['bundle_product_line_items'][$sub_product_wrapper->product_id->value()]->line_item_id;
+              $option->line_item_id = $form_state['line_item']->line_item_id;
+        
+              // Save the product.
+              commerce_option_save($option);          
+            }
+          }
+        }
+        
+      }  
     }
+    else {
+        
+      if($type == 'commerce_option_set_reference')
+      {
+        $lang_code = field_language('commerce_product', $current_product, $field_name);
+      
+        foreach($field[$lang_code] as $id => $set_id) {
+        
+          $option = $form_state['commerce_option'][$field_name][$id];
+        
+          // Notify field widgets.
+          field_attach_submit('commerce_option', $option, $form, $form_state);
+        
+          $option->line_item_id = $form_state['line_item']->line_item_id;
+        
+          // Save the product.
+          commerce_option_save($option);
+
+        }
+      }
+
+    }
+
+    
+    
   }
   
 }

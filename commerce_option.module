@@ -79,6 +79,7 @@ function commerce_option_entity_info_alter(&$entity_info) {
         //'real path' => 'admin/commerce/products/option-sets/manage/' . $type,
         //'bundle argument' => $type,
         'access arguments' => array('administer option sets'),
+        'type' => MENU_CALLBACK,
       ),
     );
   }
@@ -182,7 +183,7 @@ function commerce_option_permission() {
 
 
 function commerce_option_get_sets($set_id = NULL) {
-  $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE);
+  $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
   return isset($set_id) ? reset($sets) : $sets;
 }
 
