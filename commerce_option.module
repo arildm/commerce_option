@@ -204,7 +204,12 @@ function commerce_option_permission() {
   return $permissions;
 }
 
-
+/**
+ * Implementation of hook_entity_delete
+ */
+function commerce_option_entity_delete($entity, $type) {
+  
+}
 
 function commerce_option_get_sets($set_id = NULL) {
   $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
