@@ -75,16 +75,23 @@ function commerce_option_entity_info_alter(&$entity_info) {
     $entity_info['commerce_option']['bundles'][$type] = array(
       'label' => $info->name,
       'admin' => array(
-        'path' => 'admin/commerce/products/option-sets/manage/' . $type,
-        //'real path' => 'admin/commerce/products/option-sets/manage/' . $type,
-        //'bundle argument' => $type,
+        'path' => 'admin/commerce/products/option-sets/manage/%commerce_option_set',
+        'real path' => 'admin/commerce/products/option-sets/manage/' . $type,
+        'bundle argument' => 5,
         'access arguments' => array('administer option sets'),
-        'type' => MENU_CALLBACK,
       ),
     );
   }
 }
 
+
+/**
+ * Implemenation of hook_menu_alter
+ */
+function commerce_option_menu_alter(&$items) {
+  $items['admin/commerce/products/option-sets']['type'] = MENU_LOCAL_TASK;
+  $items['admin/commerce/products/option-sets']['title'] = t('Option Sets');
+}
 
 /**
  * Returns an initialized product object.
@@ -121,9 +128,6 @@ function commerce_option_set_access($op, $type = NULL, $account = NULL) {
   return user_access('administer option sets', $account);
 }
 
-function commerce_option_menu_alter(&$items) {
-  $items['admin/commerce/products/option-sets']['type'] = MENU_LOCAL_TASK;
-}
 
 
 
@@ -164,6 +168,26 @@ function commerce_option_load($option_id, $reset = FALSE) {
   return reset($options);
 }
 
+/**
+ * Load all options associated with the line item.
+ *
+ * @param $line_item_id
+ *  Line item id.
+ * @return Array of options
+ */
+function commerce_option_load_by_line_item($line_item_id) {
+  $options = db_select('commerce_option', 'o')
+    ->fields('o', array('option_id'))
+    ->condition('line_item_id', $line_item_id, '=')
+    ->execute();
+  $option_ids = array();
+  
+  foreach ($options as $option) {
+    $option_ids[] = $option->option_id;
+  }
+  
+  return commerce_option_load_multiple($option_ids);
+}
 
 
 function commerce_option_save($option) {
@@ -401,14 +425,10 @@ function commerce_option_attribute_field(&$element, &$line_item) {
   
   $element['options'] = array();
 
-  $options = db_select('commerce_option', 'o')
-    ->fields('o')
-    ->condition('line_item_id', $line_item->line_item_id, '=')
-    ->execute()
-    ->fetchAllAssoc('option_id', PDO::FETCH_ASSOC);
+  $options = commerce_option_load_by_line_item($line_item->line_item_id);
 
   foreach ($options as $option) {
-    $option = commerce_option_load($option['option_id']);
+    field_attach_prepare_view('commerce_option', array($option->option_id => $option), 'attribute_view');
     $option_view = field_attach_view('commerce_option', $option, 'attribute_view');
     $element['options'][] = array(
       '#markup' => drupal_render($option_view),

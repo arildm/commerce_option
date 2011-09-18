@@ -1,8 +1,7 @@
 name = Product Option
 description = This module enables the define user input fields (aka options) in the add to card form. 
-package = "Commerce (contrib)"
+package = "Commerce Product Enhancements"
 core = 7.x
-version = 7.x-1.0
 dependencies[] = commerce
 dependencies[] = commerce_product_attributes
 

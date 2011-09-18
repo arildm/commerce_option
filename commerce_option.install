@@ -23,14 +23,27 @@ function commerce_option_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'product_id' => array(
+        'description' => 'The {commerce_product}.product_id which is linked with this option.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'field_name' => array(
+        'description' => 'The {commerce_product} field_name which is linked with this option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'line_item_id' => array(
-        'description' => 'The {commerce_line_item}.line_item_id that created this product.',
+        'description' => 'The {commerce_line_item}.line_item_id that is linked with this option.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'created' => array(
-        'description' => 'The Unix timestamp when the product was created.',
+        'description' => 'The Unix timestamp when the option was created.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -91,3 +104,26 @@ function commerce_option_schema() {
 
   return $schema;
 }
+
+
+function commerce_option_update_7100() {
+  db_add_field('commerce_option', 'product_id', array(
+    'description' => 'The {commerce_product}.product_id which is linked with this option.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+  db_add_field('commerce_option', 'field_name', array(
+    'description' => 'The {commerce_product} field_name which is linked with this option.',
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
+  ));
+  return t('Add new fields to the product option entity.');
+}
+
+
+
+
+
