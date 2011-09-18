@@ -1,5 +1,10 @@
 <?php
 
+
+/**
+ * Implementation of hook_field_info();
+ *
+ */
 function commerce_option_set_reference_field_info() {
   return array(
     'commerce_option_set_reference' => array(
@@ -34,6 +39,12 @@ function commerce_option_set_reference_field_formatter_info() {
   );
 }
 
+/**
+ * Implementation of hook_enable
+ *
+ * This is required to ensure that this module
+ * hooks are executed after the ones of commerce_product_bundle.
+ */
 function commerce_option_set_reference_enable() {
   $weight = db_select('system', 's')
     ->fields('s', array('weight'))
@@ -48,7 +59,9 @@ function commerce_option_set_reference_enable() {
   }
 }
 
-
+/**
+ * Check if the reference field is empty.
+ */
 function commerce_option_set_reference_field_is_empty($item, $field) {
   // set_id = 0 is empty too, which is exactly what we want.
   return empty($item['set_id']);
@@ -109,9 +122,6 @@ function commerce_option_set_reference_field_widget_info() {
 
   return $widgets;
 }
-
-
-
 
 
 
@@ -268,7 +278,14 @@ function commerce_option_set_reference_form_alter(&$form, &$form_state, $form_id
 
 }
 
-
+/**
+ * Cart submit callback function. This is required to create / update
+ * the option related to the line item.
+ * 
+ * @param $form Form array
+ * @param $form_state The form state array.
+ * @return void
+ */
 function commerce_option_add_to_cart_submit($form, $form_state){
     
   if (isset($form_state['default_product'])) {
@@ -342,9 +359,6 @@ function commerce_option_add_to_cart_submit($form, $form_state){
         }
       }
      }
-
-    
-    
   }
   
 }

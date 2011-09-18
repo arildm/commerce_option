@@ -149,23 +149,6 @@ function commerce_option_update_7100() {
     'serialize' => TRUE,
     'description' => 'A serialized array of additional data related to this option set.',
   ));
-
- /* db_add_field('commerce_option', 'id', array(
-    'description' => 'The primary id.',
-    'type' => 'serial',
-    'unsigned' => TRUE,
-    'not null' => TRUE,
-  ));
-  
-  db_drop_primary_key('commerce_option_set');
-  db_add_primary_key('commerce_option_set', array('id'));*/
-
-  return t('Add new fields to the product option entity.');
-}
-
-
-
-function commerce_option_update_7102() {
   
   db_add_field('commerce_option_set', 'data', array(
     'type' => 'text',
@@ -174,8 +157,7 @@ function commerce_option_update_7102() {
     'serialize' => TRUE,
     'description' => 'A serialized array of additional data related to this option set.',
   ));
-  
+
   return t('Add new fields to the product option entity.');
 }
-
 

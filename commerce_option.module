@@ -123,7 +123,9 @@ function _commerce_option_create($values = array()) {
   return $wrapper->value();
 }
 
-
+/**
+ * Check if the given operation is allowed.
+ */
 function commerce_option_set_access($op, $type = NULL, $account = NULL) {
   return user_access('administer option sets', $account);
 }
@@ -189,11 +191,16 @@ function commerce_option_load_by_line_item($line_item_id) {
   return commerce_option_load_multiple($option_ids);
 }
 
-
+/**
+ * Save a given option.
+ */
 function commerce_option_save($option) {
   return entity_get_controller('commerce_option')->save($option);
 }
 
+/**
+ * Implementation of hook_permission
+ */
 function commerce_option_permission() {
   $permissions = array(
     'administer option sets' => array(
@@ -206,6 +213,8 @@ function commerce_option_permission() {
 
 /**
  * Implementation of hook_entity_delete
+ *
+ * Delete all options, when the associated line item is deleted.
  */
 function commerce_option_entity_delete($entity, $type) {
   if ($type == 'commerce_line_item') {
