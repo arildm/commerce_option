@@ -39,7 +39,7 @@ function commerce_option_entity_info() {
   $return['commerce_option_set'] = array(
     'label' => t('Commerce Option Set'),
     'entity class' => 'CommerceOptionSet',
-    'controller class' => 'EntityAPIController',
+    'controller class' => 'EntityAPIControllerExportable',
     'base table' => 'commerce_option_set',
     'fieldable' => FALSE,
     

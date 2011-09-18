@@ -36,6 +36,12 @@ function commerce_option_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'field_delta' => array(
+        'description' => 'The {commerce_product} field delta which is linked with this option.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'line_item_id' => array(
         'description' => 'The {commerce_line_item}.line_item_id that is linked with this option.',
         'type' => 'int',
@@ -80,7 +86,7 @@ function commerce_option_schema() {
       'set_id' => array(
         'description' => 'The machine-readable name of this set.',
         'type' => 'varchar',
-        'length' => 32,
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -97,6 +103,14 @@ function commerce_option_schema() {
         'not null' => TRUE,
         'size' => 'medium',
       ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data related to this option set.',
+      ),
+
     ),
     'primary key' => array('set_id'),
   );
@@ -120,10 +134,48 @@ function commerce_option_update_7100() {
     'not null' => TRUE,
     'default' => '',
   ));
+  
+  db_add_field('commerce_option', 'field_delta', array(
+    'description' => 'The {commerce_product} field delta which is linked with this option.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+  
+  db_add_field('commerce_option_set', 'data', array(
+    'type' => 'text',
+    'not null' => FALSE,
+    'size' => 'big',
+    'serialize' => TRUE,
+    'description' => 'A serialized array of additional data related to this option set.',
+  ));
+
+ /* db_add_field('commerce_option', 'id', array(
+    'description' => 'The primary id.',
+    'type' => 'serial',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+  ));
+  
+  db_drop_primary_key('commerce_option_set');
+  db_add_primary_key('commerce_option_set', array('id'));*/
+
   return t('Add new fields to the product option entity.');
 }
 
 
 
+function commerce_option_update_7102() {
+  
+  db_add_field('commerce_option_set', 'data', array(
+    'type' => 'text',
+    'not null' => FALSE,
+    'size' => 'big',
+    'serialize' => TRUE,
+    'description' => 'A serialized array of additional data related to this option set.',
+  ));
+  
+  return t('Add new fields to the product option entity.');
+}
 
 
