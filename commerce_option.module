@@ -208,7 +208,11 @@ function commerce_option_permission() {
  * Implementation of hook_entity_delete
  */
 function commerce_option_entity_delete($entity, $type) {
-  
+  if ($type == 'commerce_line_item') {
+    db_delete('commerce_option')
+    ->condition('line_item_id', $entity->line_item_id)
+    ->execute();
+  }
 }
 
 function commerce_option_get_sets($set_id = NULL) {
