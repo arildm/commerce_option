@@ -1,5 +1,6 @@
 name = Product Option
-description = This module enables the define user input fields (aka options) in the add to card form. 
+description = Let users define one or more field(s) as an optionset to a product, which are then 
+                        displayed in the add to cart form.
 package = "Commerce Product Enhancements"
 core = 7.x
 dependencies[] = commerce

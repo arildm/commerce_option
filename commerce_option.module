@@ -90,7 +90,7 @@ function commerce_option_entity_info_alter(&$entity_info) {
  */
 function commerce_option_menu_alter(&$items) {
   $items['admin/commerce/products/option-sets']['type'] = MENU_LOCAL_TASK;
-  $items['admin/commerce/products/option-sets']['title'] = t('Option Sets');
+  $items['admin/commerce/products/option-sets']['title'] = t('Option sets');
 }
 
 /**
