@@ -23,7 +23,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#type' => 'machine_name',
     '#default_value' => isset($option_set->set_id) ? $option_set->set_id : '',
     '#maxlength' => 32,
-    '#disabled' => $option_set->isLocked() && $op != 'clone',
+    '#disabled' => isset($option_set->set_id) ? TRUE : FALSE,
     '#machine_name' => array(
       'exists' => 'commerce_option_get_sets',
       'source' => array('name'),
@@ -37,7 +37,6 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#title' => t('Description'),
     '#description' => t('This description is shown to the admin user to indicate if this option set is useful for the current purpose.'),
   );
-
 
   $form['data']['#tree'] = TRUE;
 

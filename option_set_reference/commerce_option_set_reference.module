@@ -208,7 +208,7 @@ function commerce_option_set_reference_form_alter(&$form, &$form_state, $form_id
             $someFieldIsAdded = true;
           }
         }
-       }
+      }
     }
 
     // TODO: Implement the multi options functionality to the bundle integration
