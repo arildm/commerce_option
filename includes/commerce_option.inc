@@ -10,11 +10,9 @@ class CommerceOption extends Entity {
   public $product_id;
   public $field_name;
   public $field_delta;
-  
+
   public function __construct($values = array()) {
     parent::__construct($values, 'commerce_option');
   }
-  
+
 }
-  
-   

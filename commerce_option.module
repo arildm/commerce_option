@@ -1,15 +1,13 @@
 <?php
 
-
-
 /**
- * Implements hook_entity_info()
+ * Implements hook_entity_info().
  *
  * This function provides informations about the option entities.
  */
 function commerce_option_entity_info() {
-  $return = array();  
-  
+  $return = array();
+
   $return['commerce_option'] = array(
     'label' => t('Commerce Option'),
     'entity class' => 'CommerceOption',
@@ -23,7 +21,7 @@ function commerce_option_entity_info() {
       'label' => 'set_id',
     ),
     'access callback' => 'commerce_option_set_access',
-       'module' => 'commerce_option',
+    'module' => 'commerce_option',
     'bundle keys' => array(
       'bundle' => 'set_id',
     ),
@@ -42,8 +40,8 @@ function commerce_option_entity_info() {
     'controller class' => 'EntityAPIControllerExportable',
     'base table' => 'commerce_option_set',
     'fieldable' => FALSE,
-    
-    // TODO: Make the option set exportable 
+
+    // TODO: Make the option set exportable
     'exportable' => FALSE,
     'entity keys' => array(
       'id' => 'set_id',
@@ -52,17 +50,16 @@ function commerce_option_entity_info() {
     ),
     'bundle of' => 'commerce_option',
     'access callback' => 'commerce_option_set_access',
-       'module' => 'commerce_option',
+    'module' => 'commerce_option',
     'bundles' => array(),
     'admin ui' => array(
       'path' => 'admin/commerce/products/option-sets',
       'file' => 'includes/commerce_option_set.forms.inc',
     ),
   );
-  
+
   return $return;
 }
-
 
 /**
  * Implements hook_entity_info_alter().
@@ -84,9 +81,8 @@ function commerce_option_entity_info_alter(&$entity_info) {
   }
 }
 
-
 /**
- * Implemenation of hook_menu_alter
+ * Implemenats hook_menu_alter().
  */
 function commerce_option_menu_alter(&$items) {
   $items['admin/commerce/products/option-sets']['type'] = MENU_LOCAL_TASK;
@@ -130,10 +126,6 @@ function commerce_option_set_access($op, $type = NULL, $account = NULL) {
   return user_access('administer option sets', $account);
 }
 
-
-
-
-
 /**
  * Load multiple test entities based on certain conditions.
  *
@@ -149,9 +141,6 @@ function commerce_option_set_access($op, $type = NULL, $account = NULL) {
 function commerce_option_load_multiple($pids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('commerce_option', $pids, $conditions, $reset);
 }
-
-
-
 
 /**
  * Fetch a option object.
@@ -183,11 +172,11 @@ function commerce_option_load_by_line_item($line_item_id) {
     ->condition('line_item_id', $line_item_id, '=')
     ->execute();
   $option_ids = array();
-  
+
   foreach ($options as $option) {
     $option_ids[] = $option->option_id;
   }
-  
+
   return commerce_option_load_multiple($option_ids);
 }
 
@@ -224,27 +213,27 @@ function commerce_option_entity_delete($entity, $type) {
   }
 }
 
+/**
+ * Get option sets
+ */
 function commerce_option_get_sets($set_id = NULL) {
   $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
   return isset($set_id) ? reset($sets) : $sets;
 }
 
-
 /**
- * Implements hook_commerce_option_set_info()
+ * Implements hook_commerce_option_set_info().
  */
 function commerce_option_commerce_option_set_info() {
   return db_query('SELECT * FROM {commerce_option_set}')->fetchAllAssoc('set_id', PDO::FETCH_ASSOC);
 }
 
-
 /**
- * Creates a new option set array. 
+ * Creates a new option set array.
  */
 function commerce_option_set_new($values = array()) {
   return new CommerceOptionSet($values);
 }
-
 
 /**
  * Implements hook_views_api().
@@ -274,10 +263,10 @@ function commerce_option_views_api() {
  *     the type of query performed to save the option set.
  */
 function commerce_option_set_save(CommerceOptionSet $set) {
-  
+
   // Store the entity, must be done before they are configured
   $set->save();
-    
+
   // Ensure the creation of the rules (components)
   entity_defaults_rebuild();
   menu_rebuild();
@@ -285,7 +274,9 @@ function commerce_option_set_save(CommerceOptionSet $set) {
   return $set;
 }
 
-
+/**
+ * Delete an option set.
+ */
 function commerce_option_set_delete($set_id) {
   $option_set = commerce_option_set_load($set_id);
 
@@ -304,9 +295,6 @@ function commerce_option_set_delete($set_id) {
   module_invoke_all('commerce_option_set_delete', $option_set);
 
 }
-
-
-
 
 /**
  * Loads a option set
@@ -336,7 +324,6 @@ function commerce_option_set_exists($set_id) {
 
   return TRUE;
 }
-
 
 /**
  * Form callback wrapper: create or edit a option set.
@@ -369,7 +356,6 @@ function commerce_option_set_form_wrapper($set_id) {
   return drupal_get_form('commerce_option_set_form', $option_set);
 }
 
-
 /**
  * Sets the breadcrumb for administrative option pages.
  *
@@ -391,8 +377,6 @@ function commerce_option_breadcrumb($option_sets = FALSE) {
 
   drupal_set_breadcrumb($breadcrumb);
 }
-
-
 
 /**
  * Form callback wrapper: confirmation form for deleting a option set.
@@ -427,20 +411,17 @@ function commerce_option_set_delete_form_wrapper($set_id) {
       'There are @count options of this option set. It cannot be deleted.'
     );
   }
-  
+
   module_load_include('inc', 'commerce_option', 'includes/commerce_option_set.forms');
 
   return drupal_get_form('commerce_option_set_delete_form', $option_set);
 }
 
-
-
-
 /**
- * Implements hook_attribute_field()
+ * Implements hook_attribute_field().
  */
 function commerce_option_attribute_field(&$element, &$line_item) {
-  
+
   $element['options'] = array();
 
   $options = commerce_option_load_by_line_item($line_item->line_item_id);
@@ -452,23 +433,4 @@ function commerce_option_attribute_field(&$element, &$line_item) {
       '#markup' => drupal_render($option_view),
     );
   }
-
-  /*if (count($sub_items) > 0) {
-    
-    $element['#attached']['css'][] = drupal_get_path('module', 'commerce_product_bundle') . '/theme/commerce_product_bundle_cart.css';
-    
-    foreach ($sub_items as $item) {
-      
-      
-      $item_wrapper = entity_metadata_wrapper('commerce_line_item', $item);
-      
-      
-      $element['bundles'][] = array(
-        '#markup' => theme('commerce_product_bundle_attribute', array('sub_line_item' => $item, 'product_attribute_view' => drupal_render($product_attribute_view))),
-      );
-    }
-  }*/
-  
 }
-
-

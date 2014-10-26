@@ -6,13 +6,11 @@ class CommerceOptionSet extends Entity {
   public $status;
   public $name;
   public $description;
-  
+
   public function __construct($values = array()) {
     parent::__construct($values, 'commerce_option_set');
   }
 
-  
-  
   /**
    * Returns whether the profile type is locked, thus may not be deleted or renamed.
    *
@@ -22,7 +20,6 @@ class CommerceOptionSet extends Entity {
   public function isLocked() {
     return isset($this->status) && empty($this->is_new) && (($this->status & ENTITY_IN_CODE) || ($this->status & ENTITY_FIXED));
   }
-
 }
-  
-   
+
+

@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Implements hook_schema().
  */
@@ -138,14 +137,14 @@ function commerce_option_update_7100() {
     'not null' => TRUE,
     'default' => '',
   ));
-  
+
   db_add_field('commerce_option', 'field_delta', array(
     'description' => 'The {commerce_product} field delta which is linked with this option.',
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
   ));
-  
+
   db_add_field('commerce_option_set', 'data', array(
     'type' => 'text',
     'not null' => FALSE,
@@ -153,7 +152,6 @@ function commerce_option_update_7100() {
     'serialize' => TRUE,
     'description' => 'A serialized array of additional data related to this option set.',
   ));
-  
+
   return t('Add new fields to the product option entity.');
 }
-

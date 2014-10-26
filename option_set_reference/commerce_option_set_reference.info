@@ -3,7 +3,3 @@ description = This module enables to reference an option form to the an entity.
 package = "Commerce Product Enhancements"
 core = 7.x
 dependencies[] = commerce_option
-
-
-files[] = commerce_option_set_reference.module
-

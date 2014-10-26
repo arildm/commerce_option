@@ -1,9 +1,9 @@
 <?php
 
+/**
+ * Form callback
+ */
 function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit') {
-
-
-
   if ($op == 'clone') {
     $option_set->name .= ' (cloned)';
     $option_set->set_id = '';
@@ -17,7 +17,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#required' => TRUE,
     '#size' => 30,
   );
-  
+
   // Machine-readable type name.
   $form['set_id'] = array(
     '#type' => 'machine_name',
@@ -30,24 +30,23 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     ),
     '#description' => t('A unique machine-readable name for this option set. It must only contain lowercase letters, numbers, and underscores.'),
   );
-  
+
   $form['description'] = array(
     '#type' => 'textarea',
     '#default_value' => $option_set->description,
     '#title' => t('Description'),
     '#description' => t('This description is shown to the admin user to indicate if this option set is useful for the current purpose.'),
   );
-  
+
 
   $form['data']['#tree'] = TRUE;
-  
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save option set'),
     '#weight' => 40,
   );
-  
 
   if (!$option_set->isLocked() && $op != 'add') {
     $form['actions']['delete'] = array(
@@ -58,23 +57,18 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
       '#submit' => array('commerce_option_set_form_submit_delete')
     );
   }
+
   return $form;
-
-
 }
-
-
-
 
 /**
  * Form submit handler for the option set
  */
 function commerce_option_set_form_submit($form, &$form_state) {
   $option_set = entity_ui_form_submit_build_entity($form, $form_state);
-  
-  
+
   commerce_option_set_save($option_set);
-  
+
   drupal_set_message(t('Option set saved.'));
 
   // Redirect based on the button clicked.
@@ -86,14 +80,12 @@ function commerce_option_set_form_submit($form, &$form_state) {
   }
 }
 
-
-
-
+/**
+ * Delete submit handler.
+ */
 function commerce_option_set_form_delete_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/commerce/config/option-sets/' . $form_state['option_set']->set_id . '/delete';
 }
-
-
 
 /**
  * Form callback: confirmation form for deleting a option set.
@@ -136,20 +128,3 @@ function commerce_option_set_delete_form_submit($form, &$form_state) {
 
   $form_state['redirect'] = 'commerce_option_set_delete';
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

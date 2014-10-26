@@ -5,8 +5,6 @@ core = 7.x
 dependencies[] = commerce
 dependencies[] = commerce_product_attributes
 
-
-files[] = commerce_option.module
 files[] = includes/commerce_option.inc
 files[] = includes/commerce_option_set.inc
 
@@ -15,4 +13,3 @@ files[] = includes/views/commerce_option.views.inc
 
 ; Views handlers
 files[] = includes/views/handlers/commerce_option_handler_field_option_list.inc
-
