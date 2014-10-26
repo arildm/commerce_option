@@ -12,4 +12,4 @@ files[] = includes/commerce_option_set.inc
 files[] = includes/views/commerce_option.views.inc
 
 ; Views handlers
-files[] = includes/views/handlers/commerce_option_handler_field_option_list.inc
+; files[] = includes/views/handlers/commerce_option_handler_field_option_list.inc
