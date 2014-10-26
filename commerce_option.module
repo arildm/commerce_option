@@ -211,10 +211,17 @@ function commerce_option_entity_delete($entity, $type) {
   }
 
   $options = commerce_option_load_by_line_item($entity->line_item_id);
-  $options_ids = array_keys($options);
-  if ($options_ids) {
-    entity_delete_multiple('commerce_option', $options_ids);
+  if (empty($options)) {
+    return;
   }
+
+  // Delete data in field tables
+  foreach ($options as $option) {
+    field_attach_delete('commerce_option', $option);
+  }
+
+  // Delete entries from commerce_option table.
+  entity_delete_multiple('commerce_option', array_keys($options));
 }
 
 /**
