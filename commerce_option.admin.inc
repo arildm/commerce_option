@@ -12,7 +12,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
   $form['name'] = array(
     '#title' => t('Name'),
     '#type' => 'textfield',
-    '#default_value' => $option_set->name,
+    '#default_value' => isset($option_set->name) ? $option_set->name : '',
     '#description' => t('The human-readable name of this option set.'),
     '#required' => TRUE,
     '#size' => 30,
@@ -33,7 +33,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
 
   $form['description'] = array(
     '#type' => 'textarea',
-    '#default_value' => $option_set->description,
+    '#default_value' => isset($option_set->description) ? $option_set->description : '',
     '#title' => t('Description'),
     '#description' => t('This description is shown to the admin user to indicate if this option set is useful for the current purpose.'),
   );
@@ -66,7 +66,11 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
 function commerce_option_set_form_submit($form, &$form_state) {
   $option_set = entity_ui_form_submit_build_entity($form, $form_state);
 
-  commerce_option_set_save($option_set);
+  entity_save('commerce_option_set', $option_set);
+
+  // Ensure the creation of the rules (components)
+  // entity_defaults_rebuild();
+  // menu_rebuild();
 
   drupal_set_message(t('Option set saved.'));
 
@@ -118,12 +122,20 @@ function commerce_option_set_delete_form($form, &$form_state, $option_set) {
  * Submit callback for commerce_option_set_delete_form().
  */
 function commerce_option_set_delete_form_submit($form, &$form_state) {
-  $option_set = $form_state['option_set'];
+  $option_set_id = $form_state['option_set'];
 
-  commerce_option_set_delete($option_set['set_id']);
+  $option_set = entity_load('commerce_option_set',  $option_set_id);
+  entity_delete('commerce_option_set',  $option_set);
+
+  // Notify the field API that this bundle has been destroyed.
+  field_attach_delete_bundle('commerce_option', $option_set_id);
 
   drupal_set_message(t('The option set %name has been deleted.', array('%name' => $option_set['name'])));
   watchdog('commerce_option', 'Deleted option set %name.', array('%name' => $option_set['name']), WATCHDOG_NOTICE);
+
+  // Rebuild the menu to get rid of this option set's edit menu item.
+  // commerce_option_set_reset();
+  // menu_rebuild();
 
   $form_state['redirect'] = 'commerce_option_set_delete';
 }

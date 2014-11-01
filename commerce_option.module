@@ -323,57 +323,6 @@ function commerce_option_views_api() {
 }
 
 /**
- * Saves a option set.
- *
- * This function will either insert a new option set if $option_set['is_new']
- * is set or attempt to update an existing option set if it is not. It does
- * not currently support changing the machine-readable name of the option set,
- * nor is this possible through the form supplied by the Option module.
- *
- * @param $option_set
- *   The option set array containing the basic properties as initialized in
- *     commerce_option_set_new().
- *
- * @return
- *   The return value of the call to drupal_write_record() to save the option
- *     set, either FALSE on failure or SAVED_NEW or SAVED_UPDATED indicating
- *     the type of query performed to save the option set.
- */
-function commerce_option_set_save(CommerceOptionSet $set) {
-
-  // Store the entity, must be done before they are configured
-  $set->save();
-
-  // Ensure the creation of the rules (components)
-  entity_defaults_rebuild();
-  menu_rebuild();
-
-  return $set;
-}
-
-/**
- * Delete an option set.
- */
-function commerce_option_set_delete($set_id) {
-  $option_set = commerce_option_set_load($set_id);
-
-  db_delete('commerce_option_set')
-    ->condition('set_id', $set_id)
-    ->execute();
-
-  // Rebuild the menu to get rid of this option set's edit menu item.
-  commerce_option_set_reset();
-  menu_rebuild();
-
-  // Notify the field API that this bundle has been destroyed.
-  field_attach_delete_bundle('commerce_option', $set_id);
-
-  // Notify other modules that this option set has been deleted.
-  module_invoke_all('commerce_option_set_delete', $option_set);
-
-}
-
-/**
  * Loads a option set
  *
  * @param $set_id
