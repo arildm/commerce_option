@@ -273,6 +273,14 @@ function commerce_option_set_load_multiple($option_set_ids = array(), $condition
 }
 
 /**
+ * Load all commerce option sets.
+ */
+function commerce_option_get_sets($set_id = NULL) {
+  $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
+  return isset($set_id) ? reset($sets) : $sets;
+}
+
+/**
  * Load a commerce option set.
  *
  * @param $set_id
@@ -282,11 +290,11 @@ function commerce_option_set_load_multiple($option_set_ids = array(), $condition
  * @return
  *   A fully-loaded $option object or FALSE if it cannot be loaded.
  *
- * @see commerce_option_load_multiple()
+ * @see commerce_option_set_load_multiple()
  */
 function commerce_option_set_load($set_id, $reset = FALSE) {
   $ids = (isset($set_id) ? array($set_id) : array());
-  $option_set = commerce_option_load_multiple($ids, array(), $reset);
+  $option_set = commerce_option_set_load_multiple($ids, array(), $reset);
 
   return $option_set ? reset($option_set) : FALSE;
 }
