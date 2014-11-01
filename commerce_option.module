@@ -61,8 +61,9 @@ function commerce_option_entity_info() {
   $return['commerce_option_set'] = array(
     'label' => t('Commerce Option Set'),
     'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
+    'controller class' => 'EntityAPIControllerExportable',
     'base table' => 'commerce_option_set',
+    'exportable' => TRUE,
     'fieldable' => FALSE,
     'entity keys' => array(
       'id' => 'set_id',
@@ -274,6 +275,8 @@ function commerce_option_set_load_multiple($option_set_ids = array(), $condition
 
 /**
  * Load all commerce option sets.
+ *
+ * @todo : remove in favor of func above
  */
 function commerce_option_get_sets($set_id = NULL) {
   $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
