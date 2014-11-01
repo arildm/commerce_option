@@ -117,6 +117,8 @@ function commerce_option_set_delete($form, &$form_state) {
 
 /**
  * Submit callback for commerce_option_set_delete_form().
+ *
+ * @todo: Don't allow deletion of option sets that have options defined?
  */
 function commerce_option_set_delete_submit($form, &$form_state) {
   $option_set = $form_state['commerce_option_set'];
