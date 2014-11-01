@@ -160,7 +160,7 @@ function commerce_option_entity_property_info() {
  * the commerce coupon types needs the entity info too.
  */
 function commerce_option_entity_info_alter(&$entity_info) {
-  foreach (commerce_option_get_sets() as $type => $info) {
+  foreach (commerce_option_set_load_multiple(FALSE) as $type => $info) {
     $entity_info['commerce_option']['bundles'][$type] = array(
       'label' => $info->name,
       'admin' => array(
@@ -198,7 +198,7 @@ function commerce_option_permission() {
  * Load multiple commerce options.
  *
  * @param $option_ids
- *   An array of entity IDs.
+ *   An array of entity IDs or FALSE to return all entities.
  * @param $conditions
  *   An array of conditions to match against the {entity} table.
  * @param $reset
@@ -206,7 +206,7 @@ function commerce_option_permission() {
  * @return
  *   An array of test entity objects, indexed by option_id.
  */
-function commerce_option_load_multiple($option_ids = array(), $conditions = array(), $reset = FALSE) {
+function commerce_option_load_multiple($option_ids, $conditions = array(), $reset = FALSE) {
   return entity_load('commerce_option', $option_ids, $conditions, $reset);
 }
 
@@ -261,7 +261,7 @@ function commerce_option_save($option) {
  * Load multiple commerce option sets.
  *
  * @param $option_set_ids
- *   An array of entity IDs.
+ *   An array of entity IDs or FALSE to return all entities.
  * @param $conditions
  *   An array of conditions to match against the {entity} table.
  * @param $reset
@@ -269,18 +269,8 @@ function commerce_option_save($option) {
  * @return
  *   An array of test entity objects, indexed by option_id.
  */
-function commerce_option_set_load_multiple($option_set_ids = array(), $conditions = array(), $reset = FALSE) {
+function commerce_option_set_load_multiple($option_set_ids, $conditions = array(), $reset = FALSE) {
   return entity_load('commerce_option_set', $option_set_ids, $conditions, $reset);
-}
-
-/**
- * Load all commerce option sets.
- *
- * @todo : remove in favor of func above
- */
-function commerce_option_get_sets($set_id = NULL) {
-  $sets = entity_load('commerce_option_set', isset($set_id) ? array($set_id) : FALSE, array(), TRUE);
-  return isset($set_id) ? reset($sets) : $sets;
 }
 
 /**
