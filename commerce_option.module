@@ -3,7 +3,7 @@
 /**
  * Implements hook_entity_info().
  *
- * This function provides informations about the option entities.
+ * This function provides information about the option entities.
  */
 function commerce_option_entity_info() {
   $return = array();
@@ -145,6 +145,22 @@ function commerce_option_entity_info_alter(&$entity_info) {
       ),
     );
   }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_option_menu() {
+  $items['admin/commerce/products/option-sets/%commerce_option_set/delete'] = array(
+    'title' => 'Delete commerce option set',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_option_set_delete'),
+    'access arguments' => array('administer option sets'),
+    'type' => MENU_CALLBACK,
+    'file' => 'commerce_option.admin.inc',
+  );
+
+  return $items;
 }
 
 /**
@@ -309,7 +325,7 @@ function commerce_option_commerce_option_set_info() {
  * Creates a new option set array.
  */
 function commerce_option_set_new($values = array()) {
-  return new CommerceOptionSet($values);
+  return new Entity($values);
 }
 
 /**

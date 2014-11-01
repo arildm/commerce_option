@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Form callback
+ * Commerce option set form callback
  */
 function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit') {
   if ($op == 'clone') {
@@ -9,6 +9,9 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     $option_set->set_id = '';
   }
 
+  $form['data']['#tree'] = TRUE;
+
+  // Human-readable name.
   $form['name'] = array(
     '#title' => t('Name'),
     '#type' => 'textfield',
@@ -18,7 +21,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#size' => 30,
   );
 
-  // Machine-readable type name.
+  // Machine-readable name.
   $form['set_id'] = array(
     '#type' => 'machine_name',
     '#default_value' => isset($option_set->set_id) ? $option_set->set_id : '',
@@ -31,6 +34,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#description' => t('A unique machine-readable name for this option set. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
+  // Description.
   $form['description'] = array(
     '#type' => 'textarea',
     '#default_value' => isset($option_set->description) ? $option_set->description : '',
@@ -38,13 +42,14 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#description' => t('This description is shown to the admin user to indicate if this option set is useful for the current purpose.'),
   );
 
-  $form['data']['#tree'] = TRUE;
-
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save option set'),
-    '#weight' => 40,
+  // Actions.
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save option set'),
+      '#weight' => 40,
+    ),
   );
 
   if ($op != 'add') {
@@ -61,16 +66,12 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
 }
 
 /**
- * Form submit handler for the option set
+ * Form Save submit handler for the option set.
  */
 function commerce_option_set_form_submit($form, &$form_state) {
   $option_set = entity_ui_form_submit_build_entity($form, $form_state);
 
   entity_save('commerce_option_set', $option_set);
-
-  // Ensure the creation of the rules (components)
-  // entity_defaults_rebuild();
-  // menu_rebuild();
 
   drupal_set_message(t('Option set saved.'));
 
@@ -85,57 +86,48 @@ function commerce_option_set_form_submit($form, &$form_state) {
 
 /**
  * Delete submit handler.
+ *
+ * Redirect to page that we defined in hook_menu().
  */
-function commerce_option_set_form_delete_submit($form, &$form_state) {
-  $form_state['redirect'] = 'admin/commerce/config/option-sets/' . $form_state['option_set']->set_id . '/delete';
+function commerce_option_set_form_submit_delete($form, &$form_state) {
+  $form_state['redirect'] = 'admin/commerce/products/option-sets/' . $form_state['commerce_option_set']->set_id . '/delete';
 }
 
 /**
  * Form callback: confirmation form for deleting a option set.
- *
- * @param $option_set
- *   The option set array to be deleted.
- *
- * @see confirm_form()
+ * Called as page argument in the page we redirect to in
+ * commerce_option_set_form_submit_delete().
  */
-function commerce_option_set_delete_form($form, &$form_state, $option_set) {
-  $form_state['option_set'] = $option_set;
-
+function commerce_option_set_delete($form, &$form_state) {
   // Ensure this include file is loaded when the form is rebuilt from the cache.
   $form_state['build_info']['files']['form'] = drupal_get_path('module', 'commerce_product_ui') . '/includes/commerce_product_ui.forms.inc';
 
-  $form['#submit'][] = 'commerce_option_set_delete_form_submit';
+  $option_set = current(entity_load('commerce_option_set', array(arg(4))));
+  $form_state['commerce_option_set'] = $option_set;
 
-  $form = confirm_form($form,
-    t('Are you sure you want to delete the %name option set?', array('%name' => $option_set['name'])),
+  return confirm_form($form,
+    t('Are you sure you want to delete the %name option set?', array('%name' => $option_set->name)),
     'admin/commerce/config/option-sets',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
     t('Cancel'),
     'confirm'
   );
-
-  return $form;
 }
 
 /**
  * Submit callback for commerce_option_set_delete_form().
  */
-function commerce_option_set_delete_form_submit($form, &$form_state) {
-  $option_set_id = $form_state['option_set'];
+function commerce_option_set_delete_submit($form, &$form_state) {
+  $option_set = $form_state['commerce_option_set'];
 
-  $option_set = entity_load('commerce_option_set',  $option_set_id);
-  entity_delete('commerce_option_set',  $option_set);
+  entity_delete('commerce_option_set',  $option_set->set_id);
 
   // Notify the field API that this bundle has been destroyed.
-  field_attach_delete_bundle('commerce_option', $option_set_id);
+  field_attach_delete_bundle('commerce_option', $option_set->set_id);
 
-  drupal_set_message(t('The option set %name has been deleted.', array('%name' => $option_set['name'])));
-  watchdog('commerce_option', 'Deleted option set %name.', array('%name' => $option_set['name']), WATCHDOG_NOTICE);
+  drupal_set_message(t('The option set %name has been deleted.', array('%name' => $option_set->name)));
+  watchdog('commerce_option', 'Deleted option set %name.', array('%name' => $option_set->name), WATCHDOG_NOTICE);
 
-  // Rebuild the menu to get rid of this option set's edit menu item.
-  // commerce_option_set_reset();
-  // menu_rebuild();
-
-  $form_state['redirect'] = 'commerce_option_set_delete';
+  $form_state['redirect'] = 'admin/commerce/products/option-sets';
 }
