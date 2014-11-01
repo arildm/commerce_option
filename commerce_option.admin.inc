@@ -47,7 +47,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#weight' => 40,
   );
 
-  if (!$option_set->isLocked() && $op != 'add') {
+  if ($op != 'add') {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete option set'),

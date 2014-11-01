@@ -35,13 +35,10 @@ function commerce_option_entity_info() {
 
   $return['commerce_option_set'] = array(
     'label' => t('Commerce Option Set'),
-    'entity class' => 'CommerceOptionSet',
-    'controller class' => 'EntityAPIControllerExportable',
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
     'base table' => 'commerce_option_set',
     'fieldable' => FALSE,
-
-    // TODO: Make the option set exportable
-    'exportable' => FALSE,
     'entity keys' => array(
       'id' => 'set_id',
       'label' => 'name',
@@ -53,7 +50,7 @@ function commerce_option_entity_info() {
     'bundles' => array(),
     'admin ui' => array(
       'path' => 'admin/commerce/products/option-sets',
-      'file' => 'includes/commerce_option_set.forms.inc',
+      'file' => 'commerce_option.admin.inc',
     ),
   );
 
@@ -109,6 +106,21 @@ function commerce_option_entity_property_info() {
       'label' => t('Changed date'),
       'schema_field' => 'changed',
       'setter callback' => 'entity_property_verbatim_set',
+    ),
+  );
+
+  $info['commerce_option_set']['properties'] = array(
+    'set_id' => array(
+      'type' => 'text',
+      'label' => t('Machine name'),
+      'schema field' => 'set_id',
+      'required' => TRUE,
+    ),
+    'name' => array(
+      'type' => 'text',
+      'label' => t('Human-readable name'),
+      'schema field' => 'name',
+      'required' => TRUE,
     ),
   );
 
