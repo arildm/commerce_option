@@ -10,11 +10,10 @@ function commerce_option_entity_info() {
 
   $return['commerce_option'] = array(
     'label' => t('Commerce Option'),
-    'entity class' => 'CommerceOption',
+    'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
     'base table' => 'commerce_option',
     'fieldable' => TRUE,
-
     'entity keys' => array(
       'id' => 'option_id',
       'bundle' => 'set_id',
@@ -59,6 +58,61 @@ function commerce_option_entity_info() {
   );
 
   return $return;
+}
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function commerce_option_entity_property_info() {
+  $info = array();
+
+  $info['commerce_option']['properties'] = array(
+    'option_id' => array(
+      'type' => 'integer',
+      'label' => t('Option id'),
+      'schema field' => 'option_id',
+    ),
+    'set_id' => array(
+      'type' => 'text',
+      'label' => t('Set id'),
+      'schema field' => 'set_id',
+      'setter callback' => 'entity_property_verbatim_set',
+      'required' => TRUE,
+    ),
+    'product_id' => array(
+      'type' => 'integer',
+      'label' => t('Product id'),
+      'schema field' => 'product_id',
+      'required' => TRUE,
+    ),
+    'field_name' => array(
+      'type' => 'text',
+      'label' => t('Field name'),
+      'schema field' => 'field_name',
+      'required' => TRUE,
+    ),
+    'line_item_id' => array(
+      'type' => 'integer',
+      'label' => t('Line item id'),
+      'schema_field' => 'line_item_id',
+      'setter callback' => 'entity_property_verbatim_set',
+      'required' => TRUE,
+    ),
+    'created' => array(
+      'type' => 'date',
+      'label' => t('Created date'),
+      'schema_field' => 'created',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'changed' => array(
+      'type' => 'date',
+      'label' => t('Changed date'),
+      'schema_field' => 'changed',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+  );
+
+  return $info;
 }
 
 /**
