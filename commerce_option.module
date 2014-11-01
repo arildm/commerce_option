@@ -12,6 +12,7 @@ function commerce_option_entity_info() {
     'label' => t('Commerce Option'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
+    'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'commerce_option',
     'fieldable' => TRUE,
     'entity keys' => array(
