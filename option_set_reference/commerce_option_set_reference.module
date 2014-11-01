@@ -125,7 +125,7 @@ function commerce_option_set_reference_field_widget_info() {
 function commerce_option_set_reference_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
   if($instance['widget']['type'] == 'commerce_option_set_reference_select_list') {
-    $option_sets = commerce_option_get_sets();
+    $option_sets = commerce_option_set_load_multiple(FALSE);
 
     $options = array('' => t('none'));
 
