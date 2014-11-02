@@ -65,8 +65,9 @@ function commerce_option_entity_info() {
     'base table' => 'commerce_option_set',
     'exportable' => TRUE,
     'fieldable' => FALSE,
+    'load hook' => 'commerce_option_set_load',
     'entity keys' => array(
-      'id' => 'set_id',
+      'id' => 'option_set_id',
       'label' => 'name',
       'name' => 'set_id',
     ),
@@ -136,6 +137,12 @@ function commerce_option_entity_property_info() {
   );
 
   $info['commerce_option_set']['properties'] = array(
+    'option_set_id' => array(
+      'type' => 'integer',
+      'label' => t('Option set id'),
+      'schema field' => 'option_set_id',
+      'required' => TRUE,
+    ),
     'set_id' => array(
       'type' => 'text',
       'label' => t('Machine name'),

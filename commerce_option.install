@@ -82,6 +82,12 @@ function commerce_option_schema() {
   $schema['commerce_option_set'] = array(
     'description' => 'Stores information about {commerce_option} sets.',
     'fields' => array(
+      'option_set_id' => array(
+        'description' => 'The primary identifier for the option set.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'set_id' => array(
         'description' => 'The machine-readable name of this set.',
         'type' => 'varchar',
@@ -126,9 +132,8 @@ function commerce_option_schema() {
       ),
 
     ),
-    'primary key' => array('set_id'),
+    'primary key' => array('option_set_id'),
   );
-
 
   return $schema;
 }
@@ -191,4 +196,21 @@ function commerce_option_update_7101() {
     'length' => 255,
     'not null' => FALSE,
   ));
+}
+
+/**
+ * Add new fields to option sets to make them work with entity reference.
+ */
+function commerce_option_update_7102() {
+  db_drop_primary_key('commerce_option_set');
+
+  // Add the new field
+  db_add_field('commerce_option_set', 'option_set_id', array(
+    'description' => 'The primary identifier for the option set.',
+    'type' => 'serial',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+  ),
+   array('primary key' => array('option_set_id'))
+  );
 }
