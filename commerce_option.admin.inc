@@ -28,7 +28,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
     '#maxlength' => 32,
     '#disabled' => isset($option_set->set_id) ? TRUE : FALSE,
     '#machine_name' => array(
-      'exists' => 'commerce_option_get_sets',
+      'exists' => 'commerce_option_set_load_by_name',
       'source' => array('name'),
     ),
     '#description' => t('A unique machine-readable name for this option set. It must only contain lowercase letters, numbers, and underscores.'),

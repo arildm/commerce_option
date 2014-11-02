@@ -318,6 +318,24 @@ function commerce_option_set_load($option_set_id, $reset = FALSE) {
 }
 
 /**
+ * Load a commerce option set by machine name
+ */
+function commerce_option_set_load_by_name($name) {
+  $query = db_select('commerce_option_set', 'cos')
+    ->fields('cos', array('option_set_id'))
+    ->condition('set_id', $name, '=')
+    ->execute()
+    ->fetchField();
+
+  if (!empty($query)) {
+    $option_set = commerce_option_set_load($query);
+    return $option_set;
+  }
+
+  return FALSE;
+}
+
+/**
  * Save a commerce option set.
  */
 function commerce_option_set_save($option_set) {
