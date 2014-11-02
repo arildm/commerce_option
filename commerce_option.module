@@ -626,21 +626,3 @@ function commerce_option_commerce_cart_product_comparison_properties_alter(&$com
     $comparison_properties[] = $option_set->set_id;
   }
 }
-
-/**
- * Implements hook_attribute_field().
- */
-function commerce_option_attribute_field(&$element, &$line_item) {
-
-  $element['options'] = array();
-
-  $options = commerce_option_load_by_line_item($line_item->line_item_id);
-
-  foreach ($options as $option) {
-    field_attach_prepare_view('commerce_option', array($option->option_id => $option), 'attribute_view');
-    $option_view = field_attach_view('commerce_option', $option, 'attribute_view');
-    $element['options'][] = array(
-      '#markup' => drupal_render($option_view),
-    );
-  }
-}
