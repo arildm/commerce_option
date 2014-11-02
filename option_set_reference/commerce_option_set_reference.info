@@ -1,5 +1,0 @@
-name = Product Option Set Reference
-description = This module enables to reference an option form to the an entity.
-package = "Commerce Product Enhancements"
-core = 7.x
-dependencies[] = commerce_option
