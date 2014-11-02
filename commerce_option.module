@@ -360,8 +360,7 @@ function commerce_option_entity_load($entities, $type) {
     return;
   }
 
-  // Attach the commerce options for this line item to the entity. There
-  // should be only one commerce_option per line item.
+  // Attach the commerce options for this line item to the entity.
   foreach ($entities as $id => $entity) {
     // Only for products.
     if ($entity->type != 'product') {
@@ -372,8 +371,7 @@ function commerce_option_entity_load($entities, $type) {
     $query = db_select('commerce_option', 'co')
       ->fields('co', array('option_id'))
       ->condition('line_item_id', $id, '=')
-      ->condition('product_id', $product_id, '=')
-      ->range(0, 1);
+      ->condition('product_id', $product_id, '=');
 
     $result = $query->execute()->fetchCol();
 
@@ -381,10 +379,12 @@ function commerce_option_entity_load($entities, $type) {
       continue;
     }
 
-    $commerce_option = commerce_option_load(reset($result));
-    $options_extracted = commerce_option_extract_comparison_properties($commerce_option);
+    foreach ($result as $option_id) {
+      $commerce_option = commerce_option_load($option_id);
+      $options_extracted = commerce_option_extract_comparison_properties($commerce_option);
 
-    $entity->{$commerce_option->set_id} = serialize($options_extracted);
+      $entity->{$commerce_option->set_id} = serialize($options_extracted);
+    }
   }
 }
 
