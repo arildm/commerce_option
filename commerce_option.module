@@ -50,12 +50,6 @@ function commerce_option_entity_info() {
       'bundle' => 'set_id',
     ),
     'bundles' => array(),
-    'view modes' => array(
-      'attribute_view' => array(
-        'label' => t('Attribute View'),
-        'custom settings' => FALSE,
-      ),
-    ),
   );
 
   $return['commerce_option_set'] = array(
@@ -185,12 +179,12 @@ function commerce_option_entity_property_info_alter(&$info) {
  * the commerce coupon types needs the entity info too.
  */
 function commerce_option_entity_info_alter(&$entity_info) {
-  foreach (commerce_option_set_load_multiple(FALSE) as $type => $info) {
-    $entity_info['commerce_option']['bundles'][$type] = array(
+  foreach (commerce_option_set_load_multiple(FALSE) as $info) {
+    $entity_info['commerce_option']['bundles'][$info->set_id] = array(
       'label' => $info->name,
       'admin' => array(
         'path' => 'admin/commerce/products/option-sets/manage/%commerce_option_set',
-        'real path' => 'admin/commerce/products/option-sets/manage/' . $type,
+        'real path' => 'admin/commerce/products/option-sets/manage/' . $info->set_id,
         'bundle argument' => 5,
         'access arguments' => array('administer option sets'),
       ),
