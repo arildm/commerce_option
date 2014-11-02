@@ -3,4 +3,3 @@ description = Let users define one or more field(s) as an optionset to a product
 package = "Commerce Product Enhancements"
 core = 7.x
 dependencies[] = commerce
-dependencies[] = commerce_product_attributes
