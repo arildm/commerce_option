@@ -1,5 +1,5 @@
 name = Product Option
-description = Let users define one or more field(s) as an optionset to a product.
-package = "Commerce Product Enhancements"
+description = Let users define one or more field(s) as an option set to a product.
+package = "Commerce (Contrib)"
 core = 7.x
 dependencies[] = commerce

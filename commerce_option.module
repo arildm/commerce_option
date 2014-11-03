@@ -1,6 +1,13 @@
 <?php
 
 /**
+ * Implements hook_views_api().
+ */
+function commerce_option_views_api($module = NULL, $api = NULL) {
+  return array("api" => "3.0");
+}
+
+/**
  * Implements hook_menu().
  */
 function commerce_option_menu() {
@@ -56,6 +63,7 @@ function commerce_option_entity_info() {
     'label' => t('Commerce Option Set'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIControllerExportable',
+    'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'commerce_option_set',
     'exportable' => TRUE,
     'fieldable' => FALSE,
