@@ -71,7 +71,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
 function commerce_option_set_form_submit($form, &$form_state) {
   $option_set = entity_ui_form_submit_build_entity($form, $form_state);
 
-  entity_save('commerce_option_set', $option_set);
+  commerce_option_save($option_set);
 
   drupal_set_message(t('Option set saved.'));
 
@@ -98,11 +98,7 @@ function commerce_option_set_form_submit_delete($form, &$form_state) {
  * Called as page argument in the page we redirect to in
  * commerce_option_set_form_submit_delete().
  */
-function commerce_option_set_delete($form, &$form_state) {
-  // Ensure this include file is loaded when the form is rebuilt from the cache.
-  $form_state['build_info']['files']['form'] = drupal_get_path('module', 'commerce_product_ui') . '/includes/commerce_product_ui.forms.inc';
-
-  $option_set = current(entity_load('commerce_option_set', array(arg(4))));
+function commerce_option_set_delete($form, &$form_state, $option_set) {
   $form_state['commerce_option_set'] = $option_set;
 
   return confirm_form($form,
