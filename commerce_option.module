@@ -460,6 +460,12 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
       continue;
     }
 
+    // Do not display our options if this field has been marked as an attribute field.
+    $field_instance_info = field_info_instance('commerce_product', $field_name, $current_product->type);
+    if ($field_instance_info['commerce_cart_settings']['attribute_field']) {
+      return;
+    }
+
     $lang_code = field_language('commerce_product', $current_product, $field_name);
     if (!isset($field[$lang_code])) {
       continue;
@@ -531,8 +537,25 @@ function commerce_option_add_to_cart_submit($form, $form_state){
     foreach ($field[$lang_code] as $delta => $set_id) {
       $option = $form_state['commerce_option'][$field_name][$delta]['option'];
 
-      // Notify field widgets.
+      // Notify field widgets and populate option with values.
       field_attach_submit('commerce_option', $option, $form[$field_name][$delta], $form_state);
+
+      // Check if our option is empty. If yes we shouldn't save anything.
+      // Cannot use field_get_items() because it calls field_language().
+      $option_extracted = commerce_option_extract_comparison_properties($option);
+      $ow = entity_metadata_wrapper('commerce_option', $option);
+      $empty = TRUE;
+
+      foreach (array_keys($option_extracted) as $option_field) {
+        $value = $ow->$option_field->value();
+        if (!empty($value)) {
+          $empty = FALSE;
+        }
+      }
+
+      if ($empty) {
+        continue;
+      }
 
       $line_item_id = $form_state['line_item']->line_item_id;
       $product_id = $current_product->product_id;
@@ -550,7 +573,6 @@ function commerce_option_add_to_cart_submit($form, $form_state){
 
       if (!empty($result)) {
         $commerce_option_entities = commerce_option_load_multiple($result);
-        $option_extracted = commerce_option_extract_comparison_properties($option);
         $option_extracted = serialize($option_extracted);
 
         foreach ($commerce_option_entities as $commerce_option) {
