@@ -285,6 +285,13 @@ function commerce_option_save($option) {
 }
 
 /**
+ * Initialize a new commerce option.
+ */
+function commerce_option_new($values) {
+  return entity_create('commerce_option', $values);
+}
+
+/**
  * Load multiple commerce option sets.
  *
  * @param $option_set_ids
@@ -401,7 +408,7 @@ function commerce_option_entity_load($entities, $type) {
 
     foreach ($result as $option_id) {
       $commerce_option = commerce_option_load($option_id);
-      $options_extracted = commerce_option_extract_comparison_properties($commerce_option);
+      $options_extracted = commerce_option_get_valuables($commerce_option);
 
       $entity->{$commerce_option->set_id} = serialize($options_extracted);
     }
@@ -411,9 +418,10 @@ function commerce_option_entity_load($entities, $type) {
 /**
  * Extract from our Commerce Options the stuff we need to compare to other
  * options to determine if an option is unique.
- * These should be all the fields defined in the option set.
+ * These should be all the fields defined in the option set, but it could also
+ * include custom things, defined by other modules.
  */
-function commerce_option_extract_comparison_properties($option) {
+function commerce_option_get_valuables($option) {
   $option_extracted = array();
 
   $fields = field_info_instances('commerce_option', $option->set_id);
@@ -423,7 +431,8 @@ function commerce_option_extract_comparison_properties($option) {
     $option_extracted[$field] = $option->$field;
   }
 
-  // TODO: add hook so other modules can define their own.
+  // Let other modules define their own properties.
+  drupal_alter('commerce_option_valuables', $option_extracted, $option);
 
   return $option_extracted;
 }
@@ -473,11 +482,12 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
 
     // Create a new blank option set.
     foreach($field[$lang_code] as $key => $data) {
+      $option_set = commerce_option_set_load($data['target_id']);
       $values = array(
-        'set_id' => $data['entity']->set_id,
+        'set_id' => $option_set->set_id,
       );
 
-      $option = entity_create('commerce_option', $values);
+      $option = commerce_option_new($values);
 
       $form_state['commerce_option'][$field_name][$key]['option'] = $option;
 
@@ -542,7 +552,7 @@ function commerce_option_add_to_cart_submit($form, $form_state){
 
       // Check if our option is empty. If yes we shouldn't save anything.
       // Cannot use field_get_items() because it calls field_language().
-      $option_extracted = commerce_option_extract_comparison_properties($option);
+      $option_extracted = commerce_option_get_valuables($option);
       $ow = entity_metadata_wrapper('commerce_option', $option);
       $empty = TRUE;
 
@@ -550,6 +560,7 @@ function commerce_option_add_to_cart_submit($form, $form_state){
         $value = $ow->$option_field->value();
         if (!empty($value)) {
           $empty = FALSE;
+          break;
         }
       }
 
@@ -576,14 +587,11 @@ function commerce_option_add_to_cart_submit($form, $form_state){
         $option_extracted = serialize($option_extracted);
 
         foreach ($commerce_option_entities as $commerce_option) {
-          if ($match) {
-            continue;
-          }
-
-          $commerce_option_extracted = commerce_option_extract_comparison_properties($commerce_option);
+          $commerce_option_extracted = commerce_option_get_valuables($commerce_option);
           $commerce_option_extracted = serialize($commerce_option_extracted);
           if ($commerce_option_extracted == $option_extracted) {
             $match = TRUE;
+            break;
           }
         }
       }
@@ -596,8 +604,8 @@ function commerce_option_add_to_cart_submit($form, $form_state){
       $option->field_name = $field_name;
       $option->field_delta = $delta;
       $option->product_id = $product_id;
-      $option->created = time();
-      $option->changed = time();
+      $option->created = REQUEST_TIME;
+      $option->changed = REQUEST_TIME;
 
       // Save the product.
       commerce_option_save($option);
@@ -638,6 +646,12 @@ function commerce_option_field_attach_submit($entity_type, $entity, $form, &$for
       continue;
     }
 
+    // Do not do anything if this field has been marked as an attribute field.
+    $field_instance_info = field_info_instance('commerce_product', $field_name, $current_product->type);
+    if ($field_instance_info['commerce_cart_settings']['attribute_field']) {
+      return;
+    }
+
     $lang_code = field_language('commerce_product', $current_product, $field_name);
     if (!isset($field[$lang_code])) {
       continue;
@@ -650,7 +664,7 @@ function commerce_option_field_attach_submit($entity_type, $entity, $form, &$for
       // original fields in the $form array tend to disappear.
       field_attach_submit('commerce_option', $option, $form_state['complete form'][$field_name][$delta], $form_state);
 
-      $options_extracted = commerce_option_extract_comparison_properties($option);
+      $options_extracted = commerce_option_get_valuables($option);
 
       $entity->{$option->set_id} = serialize($options_extracted);
     }
