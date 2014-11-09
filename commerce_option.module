@@ -46,17 +46,23 @@ function commerce_option_entity_info() {
     'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'commerce_option',
     'fieldable' => TRUE,
+    'load hook' => 'commerce_option_load',
     'entity keys' => array(
       'id' => 'option_id',
       'bundle' => 'set_id',
       'label' => 'set_id',
     ),
     'access callback' => 'commerce_option_set_access',
+    'creation callback' => 'commerce_option_new',
     'module' => 'commerce_option',
     'bundle keys' => array(
       'bundle' => 'set_id',
     ),
     'bundles' => array(),
+    'admin ui' => array(
+      'path' => 'admin/commerce/products/options',
+      'file' => 'commerce_option.admin.inc',
+    ),
   );
 
   $return['commerce_option_set'] = array(
@@ -216,6 +222,10 @@ function commerce_option_permission() {
       'title' => t('Administer Option Sets'),
       'description' => t('Allow users to manage option sets.'),
     ),
+    'administer options' => array(
+      'title' => t('Administer options'),
+      'description' => t('Allow users to edit options'),
+    ),
   );
 
   return $permissions;
@@ -281,6 +291,8 @@ function commerce_option_load_by_line_item($line_item_id) {
  * Save a commerce option.
  */
 function commerce_option_save($option) {
+  $option->changed = REQUEST_TIME;
+
   return entity_save('commerce_option', $option);
 }
 
@@ -288,7 +300,17 @@ function commerce_option_save($option) {
  * Initialize a new commerce option.
  */
 function commerce_option_new($values) {
-  return entity_create('commerce_option', $values);
+  if (!isset($values['set_id'])) {
+    // Try and get the existing sets so we can provide a default value for the
+    // bundle key.
+    $option_sets = commerce_option_set_load_multiple(FALSE);
+    if (!empty($option_sets)) {
+      $values['set_id'] = current($option_sets)->set_id;
+    }
+  }
+  $values['created'] = REQUEST_TIME;
+
+  return entity_get_controller('commerce_option')->create($values);
 }
 
 /**
@@ -604,10 +626,8 @@ function commerce_option_add_to_cart_submit($form, $form_state){
       $option->field_name = $field_name;
       $option->field_delta = $delta;
       $option->product_id = $product_id;
-      $option->created = REQUEST_TIME;
-      $option->changed = REQUEST_TIME;
 
-      // Save the product.
+      // Save the option.
       commerce_option_save($option);
     }
   }

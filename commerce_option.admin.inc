@@ -1,6 +1,70 @@
 <?php
 
 /**
+ * Edit option form callback
+ */
+function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
+  $form = array(
+    '#parents' => array(),
+    'data' => array('#tree' => TRUE),
+  );
+
+  // @todo
+  // Create ajaxy callback between forms for different option sets when adding a
+  // new option
+
+  // Get fields attached to this option.
+  $fields = field_info_instances('commerce_option', $option->set_id);
+
+  foreach ($fields as $key => $field) {
+    $info = field_info_field($key);
+    // @todo properly get langcode
+    $langcode = LANGUAGE_NONE;
+
+    $form[$key] = field_default_form($field['entity_type'], $option, $info, $field, $langcode, $option->{$key}[$langcode], $form, $form_state);
+  }
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save options'),
+      '#weight' => 40,
+    ),
+  );
+
+  if ($op != 'add') {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete options'),
+      '#weight' => 45,
+      '#limit_validation_errors' => array(),
+      '#submit' => array('commerce_option_form_submit_delete')
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Submit handler
+ */
+function commerce_option_form_submit($form, &$form_state) {
+  $option = $form_state['commerce_option'];
+
+  field_attach_submit('commerce_option', $option, $form, $form_state);
+
+  commerce_option_save($option);
+}
+
+/**
+ * Deletion callback
+ */
+function commerce_option_form_submit_delete($form, &$form_state) {
+
+}
+
+/**
  * Commerce option set form callback
  */
 function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit') {
