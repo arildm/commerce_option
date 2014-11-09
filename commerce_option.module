@@ -231,7 +231,7 @@ function commerce_option_permission() {
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   An array of test entity objects, indexed by option_id.
+ *   An array of entity objects, indexed by option_id.
  */
 function commerce_option_load_multiple($option_ids, $conditions = array(), $reset = FALSE) {
   return entity_load('commerce_option', $option_ids, $conditions, $reset);
@@ -607,8 +607,14 @@ function commerce_option_add_to_cart_submit($form, $form_state){
       $option->created = REQUEST_TIME;
       $option->changed = REQUEST_TIME;
 
+      // Invoke pre-save rules event
+      rules_invoke_all('commerce_option_pre_save', $option, $current_product);
+
       // Save the product.
       commerce_option_save($option);
+
+      // Invoke post-save rules event
+      rules_invoke_all('commerce_option_post_save', $option, $current_product);
     }
   }
 }
