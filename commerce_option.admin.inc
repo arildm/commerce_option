@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Edit option form callback
+ * Commerce Option create/edit form
  */
 function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
   $form = array(
@@ -9,20 +9,39 @@ function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
     'data' => array('#tree' => TRUE),
   );
 
-  // @todo
-  // Create ajaxy callback between forms for different option sets when adding a
-  // new option
+  if ($op != 'add') {
+    // Create extra info that is not editable
+    $line_item = commerce_line_item_load($option->line_item_id);
+    $liw = entity_metadata_wrapper('commerce_line_item',$line_item);
+    $product_title = $liw->commerce_product->title->value();
+    $order_id = $liw->order_id->value();
+    $order_id = l($order_id, 'admin/commerce/orders/'.$order_id.'/view');
 
-  // Get fields attached to this option.
-  $fields = field_info_instances('commerce_option', $option->set_id);
-
-  foreach ($fields as $key => $field) {
-    $info = field_info_field($key);
-    // @todo properly get langcode
-    $langcode = LANGUAGE_NONE;
-
-    $form[$key] = field_default_form($field['entity_type'], $option, $info, $field, $langcode, $option->{$key}[$langcode], $form, $form_state);
+    $form['info'] = array(
+      '#type' => 'item',
+      '#title' => t('Order info'),
+      '#markup' => t('This option is attached to product %product in order !order', array('%product' => $product_title, '!order' => $order_id)),
+    );
   }
+
+  $option_sets_raw = commerce_option_set_load_multiple(FALSE);
+  $option_sets = array();
+  foreach ($option_sets_raw as $set) {
+    $option_sets[$set->set_id] = $set->name;
+  }
+
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#options' => $option_sets,
+    '#disabled' => $op == 'add' ? FALSE : TRUE,
+    '#ajax' => array(
+      'callback' => 'commerce_option_get_option_set_fields',
+    )
+  );
+
+  // Set the fields attached to the option bundle.
+  $form['fields'] = commerce_option_build_option_set_fields($form, $form_state, $op, $option);
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -47,25 +66,83 @@ function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
 }
 
 /**
- * Submit handler
+ * Helper function to attach the fields defined in an option set to the option.
+ */
+function commerce_option_build_option_set_fields($form, $form_state, $op, $option) {
+  $subform = array(
+    '#prefix' => '<div id="commerce-option-fields">',
+    '#suffix' => '</div>',
+  );
+
+  // Get fields attached to this option.
+  $fields = field_info_instances('commerce_option', $option->set_id);
+
+  foreach ($fields as $key => $field) {
+    $info = field_info_field($key);
+    // @todo properly get langcode
+    $langcode = LANGUAGE_NONE;
+    $items = array();
+
+    // Provide default value in case we're editing.
+    if ($op != 'add') {
+      $items = $option->{$key}[$langcode];
+    }
+
+    $subform[$key] = field_default_form('commerce_option', $option, $info, $field, $langcode, $items, $form, $form_state);
+  }
+
+  return $subform;
+}
+
+/**
+ * Ajax callback that replaces the fields-part of the form with the fields
+ * defined in the Commerce Option Set (type).
+ */
+function commerce_option_get_option_set_fields(&$form, &$form_state) {
+  $type = $form_state['values']['type'];
+  $option = commerce_option_new(array('set_id' => $type));
+
+  $subform = commerce_option_build_option_set_fields($form, $form_state, 'add', $option);
+  foreach (element_children($subform) as $key) {
+    $subform[$key] = form_builder('commerce_option_form', $subform[$key], $form_state);
+  }
+
+  $commands[] = ajax_command_replace('#commerce-option-fields', drupal_render($subform));
+
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
+}
+
+/**
+ * Commerce Option form submit handler
  */
 function commerce_option_form_submit($form, &$form_state) {
   $option = $form_state['commerce_option'];
 
   field_attach_submit('commerce_option', $option, $form, $form_state);
 
+  // If we're saving a new option, add more required values.
+  if ($option->is_new) {
+    // @todo
+    // Get product id & line_item_id. Maybe the add option should only be
+    // available from an existing order with line items?
+  }
+
   commerce_option_save($option);
 }
 
 /**
- * Deletion submit callback
+ * Commerce Option form deletion submit callback
  */
 function commerce_option_form_submit_delete($form, &$form_state) {
   $form_state['redirect'] = 'admin/commerce/products/options/' . $form_state['commerce_option']->option_id . '/delete';
 }
 
 /**
- * Form callback: confirmation form for deleting an option.
+ * Commerce Option form deletion confirmation.
+ * Form callback for page defined in hook_menu().
  */
 function commerce_option_delete($form, &$form_state, $option) {
   $form_state['commerce_option'] = $option;
@@ -81,7 +158,7 @@ function commerce_option_delete($form, &$form_state, $option) {
 }
 
 /**
- * Submit callback for commerce_option_delete_form().
+ * Submit callback for commerce_option_delete form().
  */
 function commerce_option_delete_submit($form, &$form_state) {
   $option = $form_state['commerce_option'];
@@ -94,7 +171,7 @@ function commerce_option_delete_submit($form, &$form_state) {
 }
 
 /**
- * Commerce option set form callback
+ * Commerce Option Set edit/create form.
  */
 function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit') {
   if ($op == 'clone') {
@@ -159,7 +236,7 @@ function commerce_option_set_form($form, &$form_state, $option_set, $op = 'edit'
 }
 
 /**
- * Form Save submit handler for the option set.
+ * Commerce Option Set form submit handler.
  */
 function commerce_option_set_form_submit($form, &$form_state) {
   $option_set = entity_ui_form_submit_build_entity($form, $form_state);
@@ -178,7 +255,7 @@ function commerce_option_set_form_submit($form, &$form_state) {
 }
 
 /**
- * Delete submit handler.
+ * Commerce Option Set form delete submit handler.
  *
  * Redirect to page that we defined in hook_menu().
  */
