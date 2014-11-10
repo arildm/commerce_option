@@ -58,10 +58,39 @@ function commerce_option_form_submit($form, &$form_state) {
 }
 
 /**
- * Deletion callback
+ * Deletion submit callback
  */
 function commerce_option_form_submit_delete($form, &$form_state) {
+  $form_state['redirect'] = 'admin/commerce/products/options/' . $form_state['commerce_option']->option_id . '/delete';
+}
 
+/**
+ * Form callback: confirmation form for deleting an option.
+ */
+function commerce_option_delete($form, &$form_state, $option) {
+  $form_state['commerce_option'] = $option;
+
+  return confirm_form($form,
+    t('Are you sure you want to delete option %id?', array('%id' => $option->option_id)),
+    'admin/commerce/config/options',
+    '<p>' . t('This action cannot be undone.') . '</p>',
+    t('Delete'),
+    t('Cancel'),
+    'confirm'
+  );
+}
+
+/**
+ * Submit callback for commerce_option_delete_form().
+ */
+function commerce_option_delete_submit($form, &$form_state) {
+  $option = $form_state['commerce_option'];
+
+  entity_delete('commerce_option',  $option->option_id);
+
+  drupal_set_message(t('The option with id %id has been deleted.', array('%id' => $option->option_id)));
+
+  $form_state['redirect'] = 'admin/commerce/products/options';
 }
 
 /**

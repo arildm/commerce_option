@@ -20,6 +20,15 @@ function commerce_option_menu() {
     'file' => 'commerce_option.admin.inc',
   );
 
+  $items['admin/commerce/products/options/%commerce_option/delete'] = array(
+    'title' => 'Delete commerce option',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_option_delete', 4),
+    'access arguments' => array('administer options'),
+    'type' => MENU_CALLBACK,
+    'file' => 'commerce_option.admin.inc',
+  );
+
   return $items;
 }
 
