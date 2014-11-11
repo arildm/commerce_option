@@ -38,6 +38,9 @@ function commerce_option_menu() {
 function commerce_option_menu_alter(&$items) {
   $items['admin/commerce/products/option-sets']['type'] = MENU_LOCAL_TASK;
   $items['admin/commerce/products/option-sets']['title'] = t('Option sets');
+
+  $items['admin/commerce/orders/options']['type'] = MENU_LOCAL_TASK;
+  $items['admin/commerce/orders/options']['title'] = t('Options');
 }
 
 /**
@@ -69,8 +72,9 @@ function commerce_option_entity_info() {
     ),
     'bundles' => array(),
     'admin ui' => array(
-      'path' => 'admin/commerce/products/options',
+      'path' => 'admin/commerce/orders/options',
       'file' => 'commerce_option.admin.inc',
+      'controller class' => 'CommerceOptionUIController',
     ),
   );
 
@@ -280,18 +284,33 @@ function commerce_option_load($option_id, $reset = FALSE) {
  *
  * @param $line_item_id
  *  Line item id.
- * @return Array of options
+ * @return
+ *   Array of options
  */
 function commerce_option_load_by_line_item($line_item_id) {
-  $options = db_select('commerce_option', 'o')
+  $option_ids = db_select('commerce_option', 'o')
     ->fields('o', array('option_id'))
     ->condition('line_item_id', $line_item_id, '=')
-    ->execute();
-  $option_ids = array();
+    ->execute()
+    ->fetchCol();
 
-  foreach ($options as $option) {
-    $option_ids[] = $option->option_id;
-  }
+  return commerce_option_load_multiple($option_ids);
+}
+
+/**
+ * Load all options for a commerce product.
+ *
+ * @param $product_id
+ *   Commerce product id.
+ * @return
+ *   Array of options
+ */
+function commerce_option_load_by_product($product_id) {
+  $option_ids = db_select('commerce_option', 'o')
+    ->fields('o', array('option_id'))
+    ->condition('product_id', $product_id, '=')
+    ->execute()
+    ->fetchCol();
 
   return commerce_option_load_multiple($option_ids);
 }

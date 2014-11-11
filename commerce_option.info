@@ -3,3 +3,5 @@ description = Let users define one or more field(s) as an option set to a produc
 package = "Commerce (Contrib)"
 core = 7.x
 dependencies[] = commerce
+
+files[] = commerce_option.inc
