@@ -41,7 +41,7 @@ class CommerceOptionUIController extends EntityDefaultUIController {
     // Order info.
     $line_item = commerce_line_item_load($entity->line_item_id);
     $liw = entity_metadata_wrapper('commerce_line_item', $line_item);
-    $row[] = $liw->order_id->value();
+    $row[] = l($liw->order_id->value(), 'admin/commerce/orders/' . $liw->order_id->value() . '/view');
     $row[] = $liw->commerce_product->title->value();
     $row[] = $liw->commerce_product->product_id->value();
 

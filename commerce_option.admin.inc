@@ -15,7 +15,7 @@ function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
     $liw = entity_metadata_wrapper('commerce_line_item',$line_item);
     $product_title = $liw->commerce_product->title->value();
     $order_id = $liw->order_id->value();
-    $order_id = l($order_id, 'admin/commerce/orders/'.$order_id.'/view');
+    $order_id = l($order_id, 'admin/commerce/orders/' . $order_id . '/view');
 
     $form['info'] = array(
       '#type' => 'item',
