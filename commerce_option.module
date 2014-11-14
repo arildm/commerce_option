@@ -92,6 +92,7 @@ function commerce_option_entity_info() {
       'label' => 'name',
       'name' => 'set_id',
     ),
+    'deletion callback' => 'commerce_option_set_delete',
     'bundle of' => 'commerce_option',
     'access callback' => 'commerce_option_set_access',
     'module' => 'commerce_option',
@@ -402,11 +403,32 @@ function commerce_option_set_save($option_set) {
 }
 
 /**
+ * Delete a commerce option set.
+ * Make sure we also delete all commerce options using this bundle.
+ */
+function commerce_option_set_delete($id) {
+  $option_set = commerce_option_set_load($id);
+
+  $bundle = $option_set->set_id;
+
+  $options = db_select('commerce_option', 'co')
+    ->fields('co', array('option_id'))
+    ->condition('set_id', $bundle, '=')
+    ->execute()
+    ->fetchCol();
+
+  if (!empty($options)) {
+    entity_delete_multiple('commerce_option', $options);
+  }
+
+  // And finally delete the entity itself.
+  entity_get_controller('commerce_option_set')->delete(array($id));
+}
+
+/**
  * Implements hook_entity_delete().
  *
  * Delete all options, when the associated line item is deleted.
- *
- * @todo Delete stuff linked to option_set fields when they are deleted.
  */
 function commerce_option_entity_delete($entity, $type) {
   if ($type != 'commerce_line_item') {
