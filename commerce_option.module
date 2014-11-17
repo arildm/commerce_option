@@ -131,12 +131,6 @@ function commerce_option_entity_property_info() {
       'schema field' => 'product_id',
       'required' => TRUE,
     ),
-    'field_name' => array(
-      'type' => 'text',
-      'label' => t('Field name'),
-      'schema field' => 'field_name',
-      'required' => TRUE,
-    ),
     'line_item_id' => array(
       'type' => 'integer',
       'label' => t('Line item id'),
@@ -673,8 +667,6 @@ function commerce_option_add_to_cart_submit($form, $form_state){
       }
 
       $option->line_item_id = $line_item_id;
-      $option->field_name = $field_name;
-      $option->field_delta = $delta;
       $option->product_id = $product_id;
 
       // Save the option.

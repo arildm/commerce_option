@@ -28,19 +28,6 @@ function commerce_option_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'field_name' => array(
-        'description' => 'The {commerce_product} field_name which is linked with this option.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'field_delta' => array(
-        'description' => 'The {commerce_product} field delta which is linked with this option.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'line_item_id' => array(
         'description' => 'The {commerce_line_item}.line_item_id that is linked with this option.',
         'type' => 'int',
@@ -213,4 +200,12 @@ function commerce_option_update_7102() {
   ),
    array('primary key' => array('option_set_id'))
   );
+}
+
+/**
+ * Drop two columns in the commerce_option table as they contain useless data.
+ */
+function commerce_option_update_7103() {
+  db_drop_field('commerce_option', 'field_name');
+  db_drop_field('commerce_option', 'field_delta');
 }
