@@ -144,7 +144,7 @@ function commerce_option_form_submit_delete($form, &$form_state) {
  * Commerce Option form deletion confirmation.
  * Form callback for page defined in hook_menu().
  */
-function commerce_option_delete($form, &$form_state, $option) {
+function commerce_option_delete_confirm($form, &$form_state, $option) {
   $form_state['commerce_option'] = $option;
 
   return confirm_form($form,
@@ -158,9 +158,9 @@ function commerce_option_delete($form, &$form_state, $option) {
 }
 
 /**
- * Submit callback for commerce_option_delete form().
+ * Submit callback for commerce_option_delete_confirm form().
  */
-function commerce_option_delete_submit($form, &$form_state) {
+function commerce_option_delete_confirm_submit($form, &$form_state) {
   $option = $form_state['commerce_option'];
 
   entity_delete('commerce_option',  $option->option_id);
@@ -268,7 +268,7 @@ function commerce_option_set_form_submit_delete($form, &$form_state) {
  * Called as page argument in the page we redirect to in
  * commerce_option_set_form_submit_delete().
  */
-function commerce_option_set_delete($form, &$form_state, $option_set) {
+function commerce_option_set_delete_confirm($form, &$form_state, $option_set) {
   $form_state['commerce_option_set'] = $option_set;
 
   return confirm_form($form,
@@ -286,7 +286,7 @@ function commerce_option_set_delete($form, &$form_state, $option_set) {
  *
  * @todo: Don't allow deletion of option sets that have options defined?
  */
-function commerce_option_set_delete_submit($form, &$form_state) {
+function commerce_option_set_delete_confirm_submit($form, &$form_state) {
   $option_set = $form_state['commerce_option_set'];
 
   entity_delete('commerce_option_set',  $option_set->set_id);

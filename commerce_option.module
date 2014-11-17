@@ -14,7 +14,7 @@ function commerce_option_menu() {
   $items['admin/commerce/products/option-sets/%commerce_option_set/delete'] = array(
     'title' => 'Delete commerce option set',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_option_set_delete', 4),
+    'page arguments' => array('commerce_option_set_delete_confirm', 4),
     'access arguments' => array('administer option sets'),
     'type' => MENU_CALLBACK,
     'file' => 'commerce_option.admin.inc',
@@ -23,7 +23,7 @@ function commerce_option_menu() {
   $items['admin/commerce/products/options/%commerce_option/delete'] = array(
     'title' => 'Delete commerce option',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_option_delete', 4),
+    'page arguments' => array('commerce_option_delete_confirm', 4),
     'access arguments' => array('administer options'),
     'type' => MENU_CALLBACK,
     'file' => 'commerce_option.admin.inc',
