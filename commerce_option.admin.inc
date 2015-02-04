@@ -4,6 +4,15 @@
  * Commerce Option create/edit form
  */
 function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
+  // Disable adding new options for now, until we figure out how to properly
+  // attach it to an order.
+  if ($op == 'add') {
+    return array(
+      'info' => array('#markup' => t('Adding an option through the UI is currently not supported.')),
+    );
+  }
+
+
   $form = array(
     '#parents' => array(),
     'data' => array('#tree' => TRUE),
