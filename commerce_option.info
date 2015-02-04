@@ -1,6 +1,6 @@
 name = Product Option
 description = Let users define one or more field(s) as an option set to a product.
-package = "Commerce (Contrib)"
+package = "Commerce (contrib)"
 core = 7.x
 dependencies[] = commerce
 dependencies[] = entityreference
