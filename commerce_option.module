@@ -586,15 +586,22 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
  * @return void
  */
 function commerce_option_add_to_cart_submit($form, $form_state){
+  // Get current product, taking into account different Commerce versions behavior.
   if (isset($form_state['default_product'])) {
-    $current_product = $form_state['default_product'];
+    $product_id = $form_state['default_product']->product_id;
+  }
+  elseif (isset($form['default_product_id'])) {
+    $product_id = $form['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
+    $product_id = $current_product->product_id;
   }
   else {
     return;
   }
+
+  $current_product = commerce_product_load($product_id);
 
   // Iterates the fields of this product. We search for entity reference fields
   // to a commerce option set.
@@ -689,15 +696,22 @@ function commerce_option_field_attach_submit($entity_type, $entity, $form, &$for
     return;
   }
 
+  // Get current product, taking into account different Commerce versions behavior.
   if (isset($form_state['default_product'])) {
-    $current_product = $form_state['default_product'];
+    $product_id = $form_state['default_product']->product_id;
+  }
+  elseif (isset($form['default_product_id'])) {
+    $product_id = $form['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
+    $product_id = $current_product->product_id;
   }
   else {
     return;
   }
+
+  $current_product = commerce_product_load($product_id);
 
   // Iterates the fields of this product. We search for entity reference fields
   // to a commerce option set.
