@@ -517,8 +517,8 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form_state['default_product'])) {
     $product_id = $form_state['default_product']->product_id;
   }
-  elseif (isset($form['default_product_id'])) {
-    $product_id = $form['default_product_id'];
+  elseif (isset($form_state['default_product_id'])) {
+    $product_id = $form_state['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
@@ -596,8 +596,8 @@ function commerce_option_add_to_cart_submit($form, $form_state){
   if (isset($form_state['default_product'])) {
     $product_id = $form_state['default_product']->product_id;
   }
-  elseif (isset($form['default_product_id'])) {
-    $product_id = $form['default_product_id'];
+  elseif (isset($form_state['default_product_id'])) {
+    $product_id = $form_state['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
@@ -706,8 +706,8 @@ function commerce_option_field_attach_submit($entity_type, $entity, $form, &$for
   if (isset($form_state['default_product'])) {
     $product_id = $form_state['default_product']->product_id;
   }
-  elseif (isset($form['default_product_id'])) {
-    $product_id = $form['default_product_id'];
+  elseif (isset($form_state['default_product_id'])) {
+    $product_id = $form_state['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
