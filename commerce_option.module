@@ -515,14 +515,20 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
 
   // Get the current product. Is added in the cart module.
   if (isset($form_state['default_product'])) {
-    $current_product = $form_state['default_product'];
+    $product_id = $form_state['default_product']->product_id;
+  }
+  elseif (isset($form['default_product_id'])) {
+    $product_id = $form['default_product_id'];
   }
   elseif (isset($form_state['products'])) {
     $current_product = reset($form_state['products']);
+    $product_id = $current_product->product_id;
   }
   else {
     return;
   }
+
+  $current_product = commerce_product_load($product_id);
 
   $someFieldIsAdded = FALSE;
 
