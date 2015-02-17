@@ -325,12 +325,14 @@ function commerce_option_save($option) {
 function commerce_option_new($values) {
   if (!isset($values['set_id'])) {
     // Try and get the existing sets so we can provide a default value for the
-    // bundle key.
+    // bundle key. Otherwise just set to true to avoid errors in Entity API.
+    $values['set_id'] = TRUE;
     $option_sets = commerce_option_set_load_multiple(FALSE);
     if (!empty($option_sets)) {
       $values['set_id'] = current($option_sets)->set_id;
     }
   }
+
   $values['created'] = REQUEST_TIME;
 
   return entity_get_controller('commerce_option')->create($values);
