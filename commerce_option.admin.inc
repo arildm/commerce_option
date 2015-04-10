@@ -87,8 +87,8 @@ function commerce_option_build_option_set_fields(&$form, &$form_state, $op, $opt
 
   foreach ($fields as $key => $field) {
     $info = field_info_field($key);
-    // @todo properly get langcode
-    $langcode = LANGUAGE_NONE;
+    $langcode = field_language('commerce_option', $option, $key);
+
     $items = array();
 
     // Provide default value in case we're editing.
