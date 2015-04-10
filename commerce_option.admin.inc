@@ -12,7 +12,6 @@ function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
     );
   }
 
-
   $form = array(
     '#parents' => array(),
     'data' => array('#tree' => TRUE),
@@ -77,7 +76,7 @@ function commerce_option_form($form, &$form_state, $option, $op = 'edit') {
 /**
  * Helper function to attach the fields defined in an option set to the option.
  */
-function commerce_option_build_option_set_fields($form, $form_state, $op, $option) {
+function commerce_option_build_option_set_fields(&$form, &$form_state, $op, $option) {
   $subform = array(
     '#prefix' => '<div id="commerce-option-fields">',
     '#suffix' => '</div>',
@@ -93,7 +92,7 @@ function commerce_option_build_option_set_fields($form, $form_state, $op, $optio
     $items = array();
 
     // Provide default value in case we're editing.
-    if ($op != 'add') {
+    if ($op != 'add' && !empty($option->{$key}[$langcode])) {
       $items = $option->{$key}[$langcode];
     }
 
