@@ -57,6 +57,7 @@ function commerce_option_schema() {
     'primary key' => array('option_id'),
     'indexes' => array(
       'set_id' => array('set_id'),
+      'line_item_id' => array('line_item_id'),
     ),
     'foreign keys' => array(
       'line_item' => array(
@@ -208,4 +209,11 @@ function commerce_option_update_7102() {
 function commerce_option_update_7103() {
   db_drop_field('commerce_option', 'field_name');
   db_drop_field('commerce_option', 'field_delta');
+}
+
+/**
+ * Add index to table
+ */
+function commerce_option_update_7104() {
+  db_add_index('commerce_option', 'line_item_id', array('line_item_id'));
 }
