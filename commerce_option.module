@@ -560,6 +560,11 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
       continue;
     }
 
+    // Init the fields' form elements.
+    $form[$field_name] = array(
+      '#tree' => TRUE,
+    );
+
     // Create a new blank option set.
     foreach($field[$lang_code] as $key => $data) {
       $option_set = commerce_option_set_load($data['target_id']);
@@ -571,11 +576,8 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
 
       $form_state['commerce_option'][$field_name][$key]['option'] = $option;
 
-      $form[$field_name] = array(
-        '#tree' => TRUE,
-        $key => array(
-          '#parents' => array($field_name, $key),
-        )
+      $form[$field_name][$key] = array(
+        '#parents' => array($field_name, $key),
       );
 
       field_attach_form('commerce_option', $option, $form[$field_name][$key], $form_state);
