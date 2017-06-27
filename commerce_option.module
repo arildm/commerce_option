@@ -570,6 +570,7 @@ function commerce_option_form_alter(&$form, &$form_state, $form_id) {
       $option_set = commerce_option_set_load($data['target_id']);
       $values = array(
         'set_id' => $option_set->set_id,
+        'product_id' => $current_product->product_id,
       );
 
       $option = commerce_option_new($values);
